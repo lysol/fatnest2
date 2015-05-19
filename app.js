@@ -103,13 +103,13 @@ app.get('/api/dashboard-data', ensureAuthenticated, function(req, res) {
 
 	getClient(req.user.id, function(err, twit) {
 		if (err === null) {
-			twit.get('statuses/user_timeline', { screen_name: req.user.username }, function(err, data, response) {
+			twit.get('statuses/oembed', { id: req.user.id_str },  function (err, data, response) {
 				if (err === null) {
 					res.json(data);
 				} else {
 					console.error(err);
 				}
-			});
+	        });
 		} else {
 			console.error(err);
 		}

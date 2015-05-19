@@ -1,5 +1,5 @@
-App.controller('dashboardController', ['$scope', '$log', '$http', function($scope, $log, $http) {
-	$scope.tweets = [];
+App.controller('dashboardController', ['$scope', '$sce', '$http', function($scope, $sce, $http) {
+	$scope.tweets = '';
 
 	var authenticatedPromise = $http.get("/api/authenticated");
 
@@ -9,7 +9,7 @@ App.controller('dashboardController', ['$scope', '$log', '$http', function($scop
 			var responsePromise = $http.get("/api/dashboard-data");
 
 			responsePromise.success(function(data, status, headers, config) {
-			    $scope.tweets = data;
+			    $scope.tweets = $sce.trustAsHtml(data.html);
 			});
 		} else {
 			$location.path('/');
