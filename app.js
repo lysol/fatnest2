@@ -28,6 +28,7 @@ var saveUser = function(token, tokenSecret, profile) {
 	var payload = {};
 	payload['token'] = token;
 	payload['tokenSecret'] = tokenSecret;
+	payload['username'] = profile.username;
 	console.log(profile.id.toString() + '_keys', payload);
 	client.hmset(profile.id.toString() + '_keys', payload);
 };
@@ -51,6 +52,33 @@ passport.deserializeUser(function(obj, done) {
 	done(null, obj);
 });
 
+
+
+var getClient = function(id, cb) {
+
+	if (twits[id] === undefined) {
+		client.hgetall(id.toString() + '_keys', function(err, obj) {
+			if (err === null) {
+				console.log(obj);
+				twits[id] = new Twit({
+					consumer_key: config.TWITTER_CONSUMER_KEY,
+					consumer_secret: config.TWITTER_CONSUMER_SECRET,
+					access_token: obj.token,
+					access_token_secret: obj.tokenSecret
+				});
+				cb(null, twits[id]);
+			} else {
+				cb(err, null);
+			}
+		});
+	} else {
+		cb(null, twits[id]);
+	}
+};
+
+
+
+
 // Redirect the user to Twitter for authentication.  When complete, Twitter
 // will redirect the user back to the application at
 //   /auth/twitter/callback
@@ -61,34 +89,19 @@ app.get('/auth/twitter', passport.authenticate('twitter'));
 // access was granted, the user will be logged in.  Otherwise,
 // authentication has failed.
 app.get('/auth/twitter/callback',
-  passport.authenticate('twitter', { successRedirect: '/',
+  passport.authenticate('twitter', { successRedirect: '/dashboard',
                                      failureRedirect: '/login' }));
 
 
+app.get('/api/authenticated', ensureAuthenticated, function(req, res) {
+	res.json({
+		authenticated: req.isAuthenticated()
+	});
+});
+
 app.get('/api/dashboard-data', ensureAuthenticated, function(req, res) {
 
-	var getClient = function(cb) {
-		if (twits[req.user.username] === undefined) {
-			client.hgetall(req.user.id.toString() + '_keys', function(err, obj) {
-				if (err === null) {
-					console.log(obj);
-					twits[req.user.username] = new Twit({
-						consumer_key: config.TWITTER_CONSUMER_KEY,
-						consumer_secret: config.TWITTER_CONSUMER_SECRET,
-						access_token: obj.token,
-						access_token_secret: obj.tokenSecret
-					});
-					cb(null, twits[req.user.username]);
-				} else {
-					cb(err, null);
-				}
-			});
-		} else {
-			cb(null, twits[req.user.username]);
-		}
-	};
-
-	getClient(function(err, twit) {
+	getClient(req.user.id, function(err, twit) {
 		if (err === null) {
 			twit.get('statuses/user_timeline', { screen_name: req.user.username }, function(err, data, response) {
 				if (err === null) {
