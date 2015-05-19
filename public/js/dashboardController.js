@@ -11,6 +11,8 @@ App.controller('dashboardController', ['$scope', '$log', '$http', function($scop
 			responsePromise.success(function(data, status, headers, config) {
 			    $scope.tweets = data;
 			});
+		} else {
+			$location.path('/');
 		}
 	});
 
