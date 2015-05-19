@@ -1,0 +1,17 @@
+var App = angular.module('fatnest', ['ngRoute'])
+	.config(['$routeProvider', '$locationProvider',
+	function($routeProvider, $locationProvider) {
+
+		$routeProvider
+			.when('/dashboard', {
+				templateUrl: 'templates/dashboard.html',
+				controller: 'dashboardController'
+			})
+			.when('/', {
+				templateUrl: 'templates/home.html',
+				controller: 'homeController',
+				controllerAs: 'home'
+			});
+			
+		$locationProvider.html5Mode(true);
+	}]);

@@ -1,0 +1,36 @@
+<!DOCTYPE html> 
+<html data-ng-app="fatnest">
+<head> 
+
+<base href="/" />
+<meta charset="UTF-8" />
+
+<!-- Meta Details -->
+<title>Fatnest</title>
+
+<!-- iOS -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+<!--- Set this as the HTML tag in your application -->
+<script src="bower_components/angular/angular.js"></script>
+<script src="bower_components/angular-resource/angular-resource.js"></script>
+<script src="bower_components/angular-route/angular-route.js"></script>
+
+<script type="text/javascript" src="js/app.js"></script>
+<script type="text/javascript" src="js/homeController.js"></script>
+<script type="text/javascript" src="js/fatnestController.js"></script>
+<script type="text/javascript" src="js/dashboardController.js"></script>
+</head>
+
+<body>
+	<div class="header">fatnest</div>
+	
+	<div ng-controller="fatnestController">
+		
+		<div ng-view>
+
+		</div>
+	</div>
+
+</body>
+</html>
