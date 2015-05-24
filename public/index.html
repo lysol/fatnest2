@@ -11,27 +11,42 @@
 <!-- iOS -->
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
+
+<link type="text/css" rel="stylesheet" href="bower_components/skeleton/css/normalize.css" />
+<link type="text/css" rel="stylesheet" href="bower_components/skeleton/css/skeleton.css" />
+
+
 <!--- Set this as the HTML tag in your application -->
 <script src="bower_components/angular/angular.js"></script>
 <script src="bower_components/angular-resource/angular-resource.js"></script>
 <script src="bower_components/angular-route/angular-route.js"></script>
+<script src="bower_components/angular-route/angular-route.js"></script>
+<script src="bower_components/twitter-text/pkg/twitter-text-1.10.0.js"></script>
 
 <script type="text/javascript" src="js/app.js"></script>
 <script type="text/javascript" src="js/homeController.js"></script>
 <script type="text/javascript" src="js/fatnestController.js"></script>
 <script type="text/javascript" src="js/dashboardController.js"></script>
 <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+
+
 </head>
 
 <body>
-	<div class="header">fatnest</div>
-	
-	<div ng-controller="fatnestController">
-		
-		<div ng-view>
+	<div class="container">
 
+		<div class="row">
+			<header><h1>fatnest</h1></header>
 		</div>
-	</div>
 
+		<div ng-controller="fatnestController">
+				
+				<div ng-view>
+
+				</div>
+			</div>
+		</div>
+	</body>
 </body>
 </html>
