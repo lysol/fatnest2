@@ -6,8 +6,8 @@
 				</option>
 			</select>
 			<textarea ng-model="draft" ng-change="evalTweet()"></textarea>
+			<span ng-bind="charCount"></span>
 		</div>
-		<span ng-bind="charCount"></span>
 
 		<div class="eight columns" ng-bind-html="tweets">
 
