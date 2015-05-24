@@ -4,6 +4,8 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 	$scope.charCount = 140;
 	$scope.primaryAccountID = undefined;
 	$scope.delegatedAccounts = [];
+	$scope.delegatedToAccounts = [];
+	$scope.newDelegate = '';
 
 	var authenticatedPromise = $http.get("/api/authenticated");
 
@@ -17,11 +19,17 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 			    $timeout(function () { twttr.widgets.load(); }, 500); 
 			});
 
-			var accountsPromise = $http.get("/api/delegated-accounts");
+			var delegatedFromPromise = $http.get("/api/delegated-accounts");
 
-			accountsPromise.success(function(data, status, headers, config) {
+			delegatedFromPromise.success(function(data, status, headers, config) {
 				$scope.delegatedAccounts = data['delegated-accounts'];
 				$scope.primaryAccountID = data['primary-account-id'];				
+			});
+
+			var delegatedToPromise = $http.get("/api/delegated-to-accounts");
+
+			delegatedToPromise.success(function(data, status, headers, config) {
+				$scope.delegatedToAccounts = data['delegated-to-accounts'];
 			});
 		} else {
 			$location.path('/');
@@ -32,4 +40,13 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 		$scope.charCount = 140 - twttr.txt.getTweetLength($scope.draft);
 	};
 
+	$scope.checkDelegate = function() {
+		newDelegatePromise = $http.post("/api/new-delegate", { screen_name: $scope.newDelegate });
+
+		newDelegatePromise.success(function(data, status, headers, config) {
+			if (data.success !== undefined && data.success) {
+				$scope.delegatedToAccounts.push(data.newDelegate);
+			}
+		});
+	}
 }]);

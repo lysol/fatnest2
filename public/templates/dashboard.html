@@ -1,20 +1,36 @@
 	<div class="row">
 		<div class="four columns">
-			<select ng-model="selectedAccount">
-				<option 
-					ng-style="{ 'background-image': 'url(' + account.profile_image_url + ')', 'background-repeat': 'no-repeat', 'background-position': 'left' }"
-					ng-selected="{{ primaryAccountID == account.id }}" 
-					ng-repeat="account in delegatedAccounts" 
-					value="{{ account.id }}"
-					>
-					{{ account.screen_name }}
-				</option>
-			</select>
-			<textarea 
-				ng-model="draft" 
-				ng-change="evalTweet()"
-				></textarea>
-			<div ng-bind="charCount"></div>
+			<div class="row">
+				<h3>Tweet</h3>
+				<select ng-model="selectedAccount">
+					<option 
+						ng-style="{ 'background-image': 'url(' + account.profile_image_url + ')', 'background-repeat': 'no-repeat', 'background-position': 'left' }"
+						ng-selected="{{ primaryAccountID == account.id }}" 
+						ng-repeat="account in delegatedAccounts" 
+						value="{{ account.id }}"
+						>
+						{{ account.screen_name }}
+					</option>
+				</select>
+				<textarea class="u-full-width"
+					ng-model="drah3ft" 
+					ng-change="evalTweet()"
+					></textarea>
+				<div ng-bind="charCount"></div>
+			</div>
+
+			<div class="row">
+				<h3>Delegate your account</h3>
+			
+				<ul>
+					<li ng-repeat="account in delegatedToAccounts">
+						{{ account.screen_name }}
+						<button ng-click="removeDelegate(account.id)">X</button>
+					</li>
+				</ul>
+				<input ng-model="newDelegate">
+				<button ng-click="checkDelegate()">Add</button>
+			</div>
 		</div>
 
 		<div class="eight columns" ng-bind-html="tweets">

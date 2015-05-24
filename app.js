@@ -3,6 +3,7 @@ var app = express();
 var config = require('./config');
 var fs = require('fs');
 var session = require('express-session');
+var bodyParser = require('body-parser');
 var passport = require('passport')
   , TwitterStrategy = require('passport-twitter').Strategy;
 
@@ -16,6 +17,11 @@ var Twit = require('twit');
 var twits = {};
 var userCache = {};
 
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+
 app.use(allowLocalAccess);
 app.use(express.static('public'));
 app.use(session({ store: new RedisStore({
@@ -28,6 +34,7 @@ app.use(passport.session({
 		secure: false
 	}
 }));
+app.use(bodyParser.json())
 
 var saveUser = function(token, tokenSecret, profile) {
 	var payload = {};
@@ -124,8 +131,9 @@ var tweetEmbedClosure = function(userId) {
 };
 
 
-var getUserCached = function(userId, callback) {
-	getClient(userId, function(err, twit) {
+var getUserCached = function(clientId, userId, callback) {
+	getClient(clientId, function(err, twit) {
+		console.log(err, twit);
 		if (err) {
 			callback(err, null);
 			return;
@@ -136,7 +144,15 @@ var getUserCached = function(userId, callback) {
 			return;
 		}
 
-		twit.get('users/show', { user_id: userId }, function(err, user) {
+		var data = {};
+
+		if (isNumeric(userId)) {
+			data.user_id = userId;
+		} else {
+			data.screen_name = userId;
+		}
+
+		twit.get('users/show', data, function(err, user) {
 			userCache[userId] = user;
 			callback(null, user);
 			return;
@@ -144,10 +160,10 @@ var getUserCached = function(userId, callback) {
 	});
 };
 
-var getTwitterUsersForIDs = function(userIDs, callback) {
+var getTwitterUsersForIDs = function(clientId, userIDs, callback) {
 	var closure = function(twitterId, cb) {
 		twitterId = twitterId.toString();
-		getUserCached(twitterId, function(err, user) {
+		getUserCached(clientId, twitterId, function(err, user) {
 			if (err) {
 				cb(err, null);
 			} else {
@@ -166,37 +182,74 @@ var getTwitterUsersForIDs = function(userIDs, callback) {
 	});
 };
 
-var getDelegatedAccounts = function(userId, callback) {
-	getClient(userId, function(err, twit) {
+var getDelegatedToAccounts = function(userId, callback) {
+	client.smembers(userId + ':delegated-to', function(err, twitter_ids) {
 		if (err) {
 			callback(err, null);
 			return;
 		}
 
-		client.smembers(userId + ':delegated', function(err, twitter_ids) {
+		getTwitterUsersForIDs(userId, twitter_ids, function(err, users) {
 			if (err) {
 				callback(err, null);
 				return;
 			}
 
-			getTwitterUsersForIDs(twitter_ids, function(err, users) {
+			callback(null, users);
+		});			
+	});
+};
+
+var getDelegatedAccounts = function(userId, callback) {
+	client.smembers(userId + ':delegated', function(err, twitter_ids) {
+		if (err) {
+			callback(err, null);
+			return;
+		}
+
+		getTwitterUsersForIDs(userId, twitter_ids, function(err, users) {
+			if (err) {
+				callback(err, null);
+				return;
+			}
+			getUserCached(userId, userId, function(err, user) {
 				if (err) {
 					callback(err, null);
 					return;
 				}
-				getUserCached(userId, function(err, user) {
-					if (err) {
-						callback(err, null);
-						return;
-					}
-					users.push(user);
-					callback(null, users);
-				});
+				users.push(user);
+				callback(null, users);
+			});
+		});
+	});
+
+};
+
+
+var createDelegate = function(userId, screenName, callback) {
+	getUserCached(userId, screenName, function(err, user) {
+		console.log(err, user);
+		if (err) {
+			callback(err, undefined);
+			return;
+		}
+		console.log('poop');
+		client.sadd(userId + ':delegated-to', user.id, function(err, res) {
+			if (err) {
+				callback(err, undefined);
+				return;
+			}
+			console.log('poop2');
+			client.sadd(user.id + ':delegated', userId, function(err, res) {
+				if (err) {
+					callback(err, undefined);
+					return;
+				}
+				callback(undefined, user);
 			});
 		});
 	});
 };
-
 
 // Redirect the user to Twitter for authentication.  When complete, Twitter
 // will redirect the user back to the application at
@@ -218,6 +271,18 @@ app.get('/api/authenticated', ensureAuthenticated, function(req, res) {
 	});
 });
 
+app.get('/api/delegated-to-accounts', ensureAuthenticated, function(req, res) {
+	getDelegatedToAccounts(req.user.id.toString(), function(err, delegatedToAccounts) {
+		if (err) {
+			console.error(err);
+			return;
+		}
+
+		res.json({
+			"delegated-to-accounts": delegatedToAccounts
+		});
+	});
+});
 
 app.get('/api/delegated-accounts', ensureAuthenticated, function(req, res) {
 	getDelegatedAccounts(req.user.id.toString(), function(err, delegatedAccounts) {
@@ -259,6 +324,13 @@ app.get('/api/recent-tweets', ensureAuthenticated, function(req, res) {
 		}
 	});
 
+});
+
+
+app.post('/api/new-delegate', ensureAuthenticated, function(req, res) {
+	createDelegate(req.user.id.toString(), req.body.screen_name, function(err, user) {
+		res.json({ error: err, success: !err, user: user });
+	});
 });
 
 
