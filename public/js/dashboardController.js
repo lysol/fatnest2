@@ -10,13 +10,18 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 	authenticatedPromise.success(function(data, status, headers, config) {
 
 		if (data.authenticated !== undefined && data.authenticated) {
-			var responsePromise = $http.get("/api/dashboard-data");
+			var tweetsPromise = $http.get("/api/recent-tweets");
 
-			responsePromise.success(function(data, status, headers, config) {
-				$scope.delegatedAccounts = data['delegated-accounts'];
+			tweetsPromise.success(function(data, status, headers, config) {
 			    $scope.tweets = $sce.trustAsHtml(data.html);
-			    $scope.primaryAccountID = data['primary-account-id'];
 			    $timeout(function () { twttr.widgets.load(); }, 500); 
+			});
+
+			var accountsPromise = $http.get("/api/delegated-accounts");
+
+			accountsPromise.success(function(data, status, headers, config) {
+				$scope.delegatedAccounts = data['delegated-accounts'];
+				$scope.primaryAccountID = data['primary-account-id'];				
 			});
 		} else {
 			$location.path('/');

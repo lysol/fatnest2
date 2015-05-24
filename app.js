@@ -218,7 +218,23 @@ app.get('/api/authenticated', ensureAuthenticated, function(req, res) {
 	});
 });
 
-app.get('/api/dashboard-data', ensureAuthenticated, function(req, res) {
+
+app.get('/api/delegated-accounts', ensureAuthenticated, function(req, res) {
+	getDelegatedAccounts(req.user.id.toString(), function(err, delegatedAccounts) {
+		if (err) {
+			console.error(err);
+			return;
+		}
+
+		res.json({
+			"primary-account-id": req.user.id,
+			"delegated-accounts": delegatedAccounts
+		});
+	});
+
+});
+
+app.get('/api/recent-tweets', ensureAuthenticated, function(req, res) {
 
 	getClient(req.user.id, function(err, twit) {
 		if (err === null) {
@@ -232,18 +248,8 @@ app.get('/api/dashboard-data', ensureAuthenticated, function(req, res) {
 					if (err) {
 						console.error(err);
 					} else {
-
-						getDelegatedAccounts(req.user.id.toString(), function(err, delegatedAccounts) {
-							if (err) {
-								console.error(err);
-								return;
-							}
-
-							res.json({
-								"html": tweets.join('\n'),
-								"primary-account-id": req.user.id,
-								"delegated-accounts": delegatedAccounts
-							});
+						res.json({
+							"html": tweets.join('\n')
 						});
 					}
 				});
