@@ -1,12 +1,20 @@
 	<div class="row">
 		<div class="four columns">
 			<select ng-model="selectedAccount">
-				<option ng-selected="{{ primaryAccountID == account.id }}" ng-repeat="account in delegatedAccounts" value="{{ account.id }}">
+				<option 
+					ng-style="{ 'background-image': 'url(' + account.profile_image_url + ')', 'background-repeat': 'no-repeat', 'background-position': 'left' }"
+					ng-selected="{{ primaryAccountID == account.id }}" 
+					ng-repeat="account in delegatedAccounts" 
+					value="{{ account.id }}"
+					>
 					{{ account.screen_name }}
 				</option>
 			</select>
-			<textarea ng-model="draft" ng-change="evalTweet()"></textarea>
-			<span ng-bind="charCount"></span>
+			<textarea 
+				ng-model="draft" 
+				ng-change="evalTweet()"
+				></textarea>
+			<div ng-bind="charCount"></div>
 		</div>
 
 		<div class="eight columns" ng-bind-html="tweets">
