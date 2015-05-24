@@ -9,7 +9,7 @@ var passport = require('passport')
 var RedisStore = require('connect-redis')(session);
 var redis = require("redis"),
       client = redis.createClient();
-require('underscore');
+var async = require('async');
 
 var Twit = require('twit');
 
@@ -22,7 +22,11 @@ app.use(session({ store: new RedisStore({
   port: 6379
 }), secret: 'sdklfjdsklghk flkjouxn89ecgosyecogvyseo8ycgoghmeshgsgsetest87s8te8st78str78trsDTUPLU:DTY:RSYKSRY:LKJRSYSJYY' }));
 app.use(passport.initialize());
-app.use(passport.session());
+app.use(passport.session({
+	cookie: {
+		secure: false
+	}
+}));
 
 var saveUser = function(token, tokenSecret, profile) {
 	var payload = {};
@@ -78,6 +82,49 @@ var getClient = function(id, cb) {
 
 
 
+var tweetEmbed = function(userId, tweet, cb) {
+	var tweetId = tweet.id_str;
+	client.get('tweet_' + tweetId, function(err, html) {
+		if (err !== null) {
+			cb(err, null);
+			return;
+		}
+
+		if (html === null) {
+			getClient(userId, function(err, twit) {
+				if (err !== null) {
+					cb(err, null);
+					return;
+				}
+				twit.get('statuses/oembed', { id: tweetId }, function(err, data, response) {
+					if (err !== null) {
+						cb(err, null);
+						return;
+					}
+
+					// strip out js.
+					var newhtml = data.html.replace(config.TWITTER_JS, '');
+					client.set('tweet_' + tweetId, newhtml, function(err) {
+						if (err !== null) {
+							cb(err, null);
+							return;
+						}
+						cb(null, newhtml);
+					});
+				});
+			});
+		} else {
+			cb(null, html);
+		}
+	});
+};
+
+var tweetEmbedClosure = function(userId) {
+	return function(tweetId, cb) {
+		return tweetEmbed(userId, tweetId, cb);
+	};
+};
+
 
 // Redirect the user to Twitter for authentication.  When complete, Twitter
 // will redirect the user back to the application at
@@ -103,12 +150,22 @@ app.get('/api/dashboard-data', ensureAuthenticated, function(req, res) {
 
 	getClient(req.user.id, function(err, twit) {
 		if (err === null) {
-			twit.get('statuses/oembed', { id: req.user.id_str },  function (err, data, response) {
-				if (err === null) {
-					res.json(data);
-				} else {
-					console.error(err);
-				}
+			console.log(req.user.id.toString());
+			twit.get('statuses/user_timeline', { id: req.user.id.toString() },  function (err, data, response) {
+
+				var tweets = [''];
+
+				var closure = tweetEmbedClosure(req.user.id.toString());
+
+				async.map(data, closure, function(err, tweets) {
+					if (err) {
+						console.error(err);
+					} else {
+						res.json({
+							html: tweets.join('\n')
+						});
+					}
+				});
 	        });
 		} else {
 			console.error(err);

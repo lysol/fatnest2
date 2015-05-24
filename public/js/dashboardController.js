@@ -1,4 +1,4 @@
-App.controller('dashboardController', ['$scope', '$sce', '$http', function($scope, $sce, $http) {
+App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', function($scope, $sce, $http, $timeout) {
 	$scope.tweets = '';
 
 	var authenticatedPromise = $http.get("/api/authenticated");
@@ -10,6 +10,7 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', function($scop
 
 			responsePromise.success(function(data, status, headers, config) {
 			    $scope.tweets = $sce.trustAsHtml(data.html);
+			    $timeout(function () { twttr.widgets.load(); }, 500); 
 			});
 		} else {
 			$location.path('/');
