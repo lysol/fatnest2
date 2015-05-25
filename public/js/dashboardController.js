@@ -45,7 +45,7 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 
 		newDelegatePromise.success(function(data, status, headers, config) {
 			if (data.success !== undefined && data.success) {
-				$scope.delegatedToAccounts.push(data.newDelegate);
+				$scope.delegatedToAccounts.push(data.user);
 			}
 		});
 	};
@@ -55,7 +55,7 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 
 		deleteDelegatePromise.success(function(data, status, headers, config) {
 			if (data.success !== undefined && data.success) {
-				$scope.delegatedToAccounts = $scope.delegatedAccounts.filter(function(item) {
+				$scope.delegatedToAccounts = $scope.delegatedToAccounts.filter(function(item) {
 					return item.id !== user_id;
 				});
 			}

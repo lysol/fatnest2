@@ -245,6 +245,7 @@ var removeDelegate = function(userId, targetUserId, callback) {
 
 var createDelegate = function(userId, screenName, callback) {
 	getUserCached(userId, screenName, function(err, user) {
+		console.log(user);
 		if (err) {
 			callback(err, undefined);
 			return;
