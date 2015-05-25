@@ -225,21 +225,35 @@ var getDelegatedAccounts = function(userId, callback) {
 
 };
 
-
-var createDelegate = function(userId, screenName, callback) {
-	getUserCached(userId, screenName, function(err, user) {
-		console.log(err, user);
+var removeDelegate = function(userId, targetUserId, callback) {
+	client.srem(userId + ':delegated-to', targetUserId, function(err, res) {
 		if (err) {
 			callback(err, undefined);
 			return;
 		}
-		console.log('poop');
+
+		client.srem(targetUserId + ':delegated', userId, function(err, res) {
+			if (err) {
+				callback(err, undefined);
+				return;
+			}
+
+			callback(undefined, true);
+		});
+	});
+};
+
+var createDelegate = function(userId, screenName, callback) {
+	getUserCached(userId, screenName, function(err, user) {
+		if (err) {
+			callback(err, undefined);
+			return;
+		}
 		client.sadd(userId + ':delegated-to', user.id, function(err, res) {
 			if (err) {
 				callback(err, undefined);
 				return;
 			}
-			console.log('poop2');
 			client.sadd(user.id + ':delegated', userId, function(err, res) {
 				if (err) {
 					callback(err, undefined);
@@ -333,6 +347,11 @@ app.post('/api/new-delegate', ensureAuthenticated, function(req, res) {
 	});
 });
 
+app.post('/api/remove-delegate', ensureAuthenticated, function(req, res) {
+	removeDelegate(req.user.id.toString(), req.body.user_id, function(err, result) {
+		res.json({ error: err, success: !err && result });
+	});
+});
 
 app.get('/dashboard', ensureAuthenticated, function(req, res) {
 	res.sendFile('./public/index.html', { root: __dirname });

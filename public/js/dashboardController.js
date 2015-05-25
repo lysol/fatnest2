@@ -48,5 +48,17 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 				$scope.delegatedToAccounts.push(data.newDelegate);
 			}
 		});
-	}
+	};
+
+	$scope.removeDelegate = function(user_id) {
+		deleteDelegatePromise = $http.post("/api/remove-delegate", { user_id: user_id });
+
+		deleteDelegatePromise.success(function(data, status, headers, config) {
+			if (data.success !== undefined && data.success) {
+				$scope.delegatedToAccounts = $scope.delegatedAccounts.filter(function(item) {
+					return item.id !== user_id;
+				});
+			}
+		});
+	};
 }]);
