@@ -9,15 +9,20 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 
 	var authenticatedPromise = $http.get("/api/authenticated");
 
+	$scope.refreshTweets = function(screen_name) {
+		var endPoint = (screen_name !== undefined) ? '/api/recent-tweets/' + screen_name : '/api/recent-tweets';
+		var tweetsPromise = $http.get(endPoint);
+
+		tweetsPromise.success(function(data, status, headers, config) {
+		    $scope.tweets = $sce.trustAsHtml(data.html);
+		    $timeout(function () { twttr.widgets.load(); }, 500); 
+		});
+	};
+
 	authenticatedPromise.success(function(data, status, headers, config) {
 
 		if (data.authenticated !== undefined && data.authenticated) {
-			var tweetsPromise = $http.get("/api/recent-tweets");
-
-			tweetsPromise.success(function(data, status, headers, config) {
-			    $scope.tweets = $sce.trustAsHtml(data.html);
-			    $timeout(function () { twttr.widgets.load(); }, 500); 
-			});
+			$scope.refreshTweets();
 
 			var delegatedFromPromise = $http.get("/api/delegated-accounts");
 

@@ -2,12 +2,12 @@
 		<div class="four columns">
 			<div class="row">
 				<h3>Tweet</h3>
-				<select ng-model="selectedAccount">
+				<select ng-model="selectedAccount" ng-change="refreshTweets(selectedAccount)">
 					<option 
 						ng-style="{ 'background-image': 'url(' + account.profile_image_url + ')', 'background-repeat': 'no-repeat', 'background-position': 'left' }"
 						ng-selected="{{ primaryAccount.id == account.id }}" 
 						ng-repeat="account in delegatedAccounts" 
-						value="{{ account.id }}"
+						value="{{ account.screen_name }}"
 						>
 						{{ account.screen_name }}
 					</option>

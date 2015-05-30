@@ -266,6 +266,43 @@ var createDelegate = function(userId, screenName, callback) {
 	});
 };
 
+var recentTweets = function(req, res) {
+
+    var getClientCallback = function(err, twit) {
+		if (err === null) {
+			var payload = { count: 5 };
+			if (req.params.screen_name !== undefined) {
+				payload.screen_name = req.params.screen_name;
+			} else {
+				payload.id = req.user.id.toString();
+			}
+
+			twit.get('statuses/user_timeline', payload, timelineCallback);
+		} else {
+			console.error(err);
+		}
+	};
+
+	var timelineCallback = function (err, data, response) {
+		var tweets = [''];
+		var closure = tweetEmbedClosure(req.user.id.toString());
+
+		async.map(data, closure, tweetsCallback);
+	};
+
+	var tweetsCallback = function(err, tweets) {
+		if (err) {
+			console.error(err);
+		} else {
+			res.json({
+				"html": tweets.join('\n')
+			});
+		}
+	};
+
+	getClient(req.user.id, getClientCallback);
+};
+
 // Redirect the user to Twitter for authentication.  When complete, Twitter
 // will redirect the user back to the application at
 //   /auth/twitter/callback
@@ -284,13 +321,13 @@ app.get('/logout', function(req, res){
   res.redirect('/');
 });
 
-app.get('/api/authenticated', ensureAuthenticated, function(req, res) {
+app.get('/api/authenticated', function(req, res) {
 	res.json({
 		authenticated: req.isAuthenticated()
 	});
 });
 
-app.get('/api/delegated-to-accounts', ensureAuthenticated, function(req, res) {
+app.get('/api/delegated-to-accounts', function(req, res) {
 	getDelegatedToAccounts(req.user.id.toString(), function(err, delegatedToAccounts) {
 		if (err) {
 			console.error(err);
@@ -303,7 +340,7 @@ app.get('/api/delegated-to-accounts', ensureAuthenticated, function(req, res) {
 	});
 });
 
-app.get('/api/delegated-accounts', ensureAuthenticated, function(req, res) {
+app.get('/api/delegated-accounts', function(req, res) {
 	getDelegatedAccounts(req.user.id.toString(), function(err, delegatedAccounts) {
 		if (err) {
 			console.error(err);
@@ -318,45 +355,22 @@ app.get('/api/delegated-accounts', ensureAuthenticated, function(req, res) {
 
 });
 
-app.get('/api/recent-tweets', ensureAuthenticated, function(req, res) {
+app.get('/api/recent-tweets/:screen_name', recentTweets);
+app.get('/api/recent-tweets', recentTweets);
 
-	getClient(req.user.id, function(err, twit) {
-		if (err === null) {
-			twit.get('statuses/user_timeline', { id: req.user.id.toString() },  function (err, data, response) {
-
-				var tweets = [''];
-
-				var closure = tweetEmbedClosure(req.user.id.toString());
-
-				async.map(data, closure, function(err, tweets) {
-					if (err) {
-						console.error(err);
-					} else {
-						res.json({
-							"html": tweets.join('\n')
-						});
-					}
-				});
-	        });
-		} else {
-			console.error(err);
-		}
-	});
-
-});
-
-
-app.post('/api/new-delegate', ensureAuthenticated, function(req, res) {
+app.post('/api/new-delegate', function(req, res) {
 	createDelegate(req.user.id.toString(), req.body.screen_name, function(err, user) {
 		res.json({ error: err, success: !err, user: user });
 	});
 });
 
-app.post('/api/remove-delegate', ensureAuthenticated, function(req, res) {
+app.post('/api/remove-delegate', function(req, res) {
 	removeDelegate(req.user.id.toString(), req.body.user_id, function(err, result) {
 		res.json({ error: err, success: !err && result });
 	});
 });
+
+app.all('/api/*', ensureAuthenticated);
 
 app.get('/dashboard', ensureAuthenticated, function(req, res) {
 	res.sendFile('./public/index.html', { root: __dirname });
