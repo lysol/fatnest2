@@ -1,5 +1,5 @@
-var App = angular.module('fatnest', ['ngRoute'])
-	.config(['$routeProvider', '$locationProvider',
+var App = angular.module('fatnest', ['ngRoute', 'ngMessages'])
+	.config(['$routeProvider', '$locationProvider', 
 	function($routeProvider, $locationProvider) {
 
 		$routeProvider

@@ -5,7 +5,7 @@
 				<select ng-model="selectedAccount">
 					<option 
 						ng-style="{ 'background-image': 'url(' + account.profile_image_url + ')', 'background-repeat': 'no-repeat', 'background-position': 'left' }"
-						ng-selected="{{ primaryAccountID == account.id }}" 
+						ng-selected="{{ primaryAccount.id == account.id }}" 
 						ng-repeat="account in delegatedAccounts" 
 						value="{{ account.id }}"
 						>
@@ -28,8 +28,18 @@
 						<button ng-click="removeDelegate(account.id)">X</button>
 					</li>
 				</ul>
-				<input ng-model="newDelegate">
-				<button ng-click="checkDelegate()">Add</button>
+				<form name="newDelegateForm" novalidate ng-submit="checkDelegate()">
+				<input name="newDelegate" ng-model="newDelegate" required>
+				<button>Add</button>
+				<div ng-show="newDelegateForm.newDelegate.$touched && newDelegateForm.newDelegate.$error" ng-messages="newDelegateForm.newDelegate.$error">
+					<div ng-message="required">You must enter a Twitter username.</div>
+					<div ng-message="duplicate">You've already delegated to this account.</div>
+				</div>
+				</form>
+			</div>
+
+			<div class="row">
+				<small>Signed in as <strong>@{{ primaryAccount.username }}</strong> <a href="/logout" target="_self">Log out</a></small>
 			</div>
 		</div>
 

@@ -279,6 +279,10 @@ app.get('/auth/twitter/callback',
   passport.authenticate('twitter', { successRedirect: '/dashboard',
                                      failureRedirect: '/login' }));
 
+app.get('/logout', function(req, res){
+  req.logout();
+  res.redirect('/');
+});
 
 app.get('/api/authenticated', ensureAuthenticated, function(req, res) {
 	res.json({
@@ -307,7 +311,7 @@ app.get('/api/delegated-accounts', ensureAuthenticated, function(req, res) {
 		}
 
 		res.json({
-			"primary-account-id": req.user.id,
+			"primary-account": req.user,
 			"delegated-accounts": delegatedAccounts
 		});
 	});

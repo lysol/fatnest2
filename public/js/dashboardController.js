@@ -2,7 +2,7 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 	$scope.tweets = '';
 	$scope.draft = '';
 	$scope.charCount = 140;
-	$scope.primaryAccountID = undefined;
+	$scope.primaryAccount = undefined;
 	$scope.delegatedAccounts = [];
 	$scope.delegatedToAccounts = [];
 	$scope.newDelegate = '';
@@ -23,7 +23,7 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 
 			delegatedFromPromise.success(function(data, status, headers, config) {
 				$scope.delegatedAccounts = data['delegated-accounts'];
-				$scope.primaryAccountID = data['primary-account-id'];				
+				$scope.primaryAccount = data['primary-account'];				
 			});
 
 			var delegatedToPromise = $http.get("/api/delegated-to-accounts");
@@ -41,13 +41,29 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 	};
 
 	$scope.checkDelegate = function() {
-		newDelegatePromise = $http.post("/api/new-delegate", { screen_name: $scope.newDelegate });
-
-		newDelegatePromise.success(function(data, status, headers, config) {
-			if (data.success !== undefined && data.success) {
-				$scope.delegatedToAccounts.push(data.user);
-			}
+		var screenNames = $scope.delegatedToAccounts.map(function(item, val) {
+			return item.screen_name.toLowerCase();
 		});
+
+		if (screenNames.indexOf($scope.newDelegate.toLowerCase()) != -1) {
+			$scope.newDelegateForm.newDelegate.$error = { duplicate: true };
+			return;
+		}
+
+		if ($scope.newDelegateForm.$valid && screenNames.indexOf($scope.newDelegate) == -1) {
+
+			newDelegatePromise = $http.post("/api/new-delegate", { screen_name: $scope.newDelegate });
+
+			newDelegatePromise.success(function(data, status, headers, config) {
+				if (data.success !== undefined && data.success) {
+					$scope.delegatedToAccounts.push(data.user);
+					$scope.newDelegate = '';
+					$scope.newDelegateForm.$setPristine();
+					$scope.newDelegateForm.$setUntouched();
+				}
+			});
+		}
+
 	};
 
 	$scope.removeDelegate = function(user_id) {
