@@ -1,0 +1,29 @@
+{
+  "name": "fatnest2",
+  "version": "0.0.1",
+  "authors": [
+    "Derek Arnold <derek@derekarnold.net>"
+  ],
+  "description": "Share twitter accounts simply",
+  "main": "public/index.html",
+  "keywords": [
+    "twitter"
+  ],
+  "license": "MIT",
+  "homepage": "http://github.com/lysol/fatnest2",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.4.0",
+    "angular-messages": "~1.4.0",
+    "angular-resource": "~1.4.0",
+    "angular-route": "~1.4.0",
+    "twitter-text": "~1.10.0",
+    "skeleton": "~2.0.4"
+  }
+}

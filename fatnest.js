@@ -17,10 +17,7 @@ method._isNumeric = function(n) {
 };
 
 method.saveUser = function(token, tokenSecret, profile) {
-	var payload = {};
-	payload['token'] = token;
-	payload['tokenSecret'] = tokenSecret;
-	payload['username'] = profile.username;
+	var payload = { token: token, tokenSecret: tokenSecret, username: profile.username };
 	this._redisClient.hmset(profile.id.toString() + ':keys', payload);
 };
 

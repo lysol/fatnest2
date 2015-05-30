@@ -3,8 +3,8 @@ var app = express();
 var config = require('./config');
 var session = require('express-session');
 var bodyParser = require('body-parser');
-var passport = require('passport')
-  , TwitterStrategy = require('passport-twitter').Strategy;
+var passport = require('passport');
+var TwitterStrategy = require('passport-twitter').Strategy;
 
 var RedisStore = require('connect-redis')(session);
 var FatNest = require('./fatnest');
@@ -22,7 +22,7 @@ app.use(passport.session({
 		secure: false
 	}
 }));
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
 
 
@@ -150,16 +150,16 @@ app.get('/dashboard', ensureAuthenticated, function(req, res) {
 });
 
 var server = app.listen(3000, function () {
-  var host = server.address().address;
-  var port = server.address().port;
+	var host = server.address().address;
+	var port = server.address().port;
 
-  console.log('Example app listening at http://%s:%s', host, port);
+	console.log('Example app listening at http://%s:%s', host, port);
 });
 
 
 function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) { return next(); }
-  res.redirect('/')
+	if (req.isAuthenticated()) { return next(); }
+	res.redirect('/');
 }
 
 function allowLocalAccess(req, res, next) {
