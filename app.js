@@ -1,26 +1,14 @@
 var express = require('express');
 var app = express();
 var config = require('./config');
-var fs = require('fs');
 var session = require('express-session');
 var bodyParser = require('body-parser');
 var passport = require('passport')
   , TwitterStrategy = require('passport-twitter').Strategy;
 
 var RedisStore = require('connect-redis')(session);
-var redis = require("redis"),
-      client = redis.createClient();
-var async = require('async');
-
-var Twit = require('twit');
-
-var twits = {};
-var userCache = {};
-
-function isNumeric(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
-}
-
+var FatNest = require('./fatnest');
+var fatNest = new FatNest(config);
 
 app.use(allowLocalAccess);
 app.use(express.static('public'));
@@ -36,13 +24,7 @@ app.use(passport.session({
 }));
 app.use(bodyParser.json())
 
-var saveUser = function(token, tokenSecret, profile) {
-	var payload = {};
-	payload['token'] = token;
-	payload['tokenSecret'] = tokenSecret;
-	payload['username'] = profile.username;
-	client.hmset(profile.id.toString() + ':keys', payload);
-};
+
 
 passport.use(new TwitterStrategy({
     consumerKey: config.TWITTER_CONSUMER_KEY,
@@ -50,7 +32,7 @@ passport.use(new TwitterStrategy({
     callbackURL: "http://127.0.0.1:3000/auth/twitter/callback"
   },
   function(token, tokenSecret, profile, done) {
-  	saveUser(token, tokenSecret, profile);
+  	fatNest.saveUser(token, tokenSecret, profile);
     done(null, profile);
   }
 ));
@@ -63,272 +45,6 @@ passport.deserializeUser(function(obj, done) {
 	done(null, obj);
 });
 
-
-
-var getClient = function(id, cb) {
-	if (twits[id] === undefined) {
-		client.hgetall(id.toString() + ':keys', function(err, obj) {
-			if (err === null && obj) {
-				twits[id] = new Twit({
-					consumer_key: config.TWITTER_CONSUMER_KEY,
-					consumer_secret: config.TWITTER_CONSUMER_SECRET,
-					access_token: obj.token,
-					access_token_secret: obj.tokenSecret
-				});
-				cb(null, twits[id]);
-			} else if (err === null && !obj) {
-				cb("No API Client recorded for " + id);
-			} else {
-				cb(err, null);
-			}
-		});
-	} else {
-		cb(null, twits[id]);
-	}
-};
-
-
-
-var tweetEmbed = function(userId, tweet, cb) {
-	var tweetId = tweet.id_str;
-	client.get('tweet_' + tweetId, function(err, html) {
-		if (err) {
-			cb(err, null);
-			return;
-		}
-
-		if (html === null) {
-			getClient(userId, function(err, twit) {
-				if (err) {
-					cb(err, null);
-					return;
-				}
-				twit.get('statuses/oembed', { id: tweetId }, function(err, data, response) {
-					if (err) {
-						cb(err, null);
-						return;
-					}
-
-					// strip out js.
-					var newhtml = data.html.replace(config.TWITTER_JS, '');
-					client.set('tweet_' + tweetId, newhtml, function(err) {
-						if (err) {
-							cb(err, null);
-							return;
-						}
-						cb(null, newhtml);
-					});
-				});
-			});
-		} else {
-			cb(null, html);
-		}
-	});
-};
-
-var tweetEmbedClosure = function(userId) {
-	return function(tweetId, cb) {
-		return tweetEmbed(userId, tweetId, cb);
-	};
-};
-
-
-var getUserCached = function(clientId, userId, callback) {
-	getClient(clientId, function(err, twit) {
-		if (err) {
-			callback(err, null);
-			return;
-		}
-
-		if (userCache[userId] !== undefined) {
-			callback(null, userCache[userId]);
-			return;
-		}
-
-		var data = {};
-
-		if (isNumeric(userId)) {
-			data.user_id = userId;
-		} else {
-			data.screen_name = userId;
-		}
-
-		twit.get('users/show', data, function(err, user) {
-			userCache[userId] = user;
-			callback(null, user);
-			return;
-		});
-	});
-};
-
-var getTwitterUsersForIDs = function(clientId, userIDs, callback) {
-	var closure = function(twitterId, cb) {
-		twitterId = twitterId.toString();
-		getUserCached(clientId, twitterId, function(err, user) {
-			if (err) {
-				cb(err, null);
-			} else {
-				cb(null, user);
-			}
-		});
-	};
-
-	async.map(userIDs, closure, function(err, twitterUsers) {
-		if (err) {
-			callback(err,  null);
-			return;
-		}
-
-		callback(null, twitterUsers);
-	});
-};
-
-var getDelegatedToAccounts = function(userId, callback) {
-	client.smembers(userId + ':delegated-to', function(err, twitter_ids) {
-		if (err) {
-			callback(err, null);
-			return;
-		}
-
-		getTwitterUsersForIDs(userId, twitter_ids, function(err, users) {
-			if (err) {
-				callback(err, null);
-				return;
-			}
-
-			callback(null, users);
-		});			
-	});
-};
-
-var getDelegatedAccounts = function(userId, callback) {
-	client.smembers(userId + ':delegated', function(err, twitter_ids) {
-		if (err) {
-			callback(err, null);
-			return;
-		}
-
-		getTwitterUsersForIDs(userId, twitter_ids, function(err, users) {
-			if (err) {
-				callback(err, null);
-				return;
-			}
-			getUserCached(userId, userId, function(err, user) {
-				if (err) {
-					callback(err, null);
-					return;
-				}
-				users.push(user);
-				callback(null, users);
-			});
-		});
-	});
-
-};
-
-var removeDelegate = function(userId, targetUserId, callback) {
-	client.srem(userId + ':delegated-to', targetUserId, function(err, res) {
-		if (err) {
-			callback(err, undefined);
-			return;
-		}
-
-		client.srem(targetUserId + ':delegated', userId, function(err, res) {
-			if (err) {
-				callback(err, undefined);
-				return;
-			}
-
-			callback(undefined, true);
-		});
-	});
-};
-
-var createDelegate = function(userId, screenName, callback) {
-	getUserCached(userId, screenName, function(err, user) {
-		console.log(user);
-		if (err) {
-			callback(err, undefined);
-			return;
-		}
-		client.sadd(userId + ':delegated-to', user.id, function(err, res) {
-			if (err) {
-				callback(err, undefined);
-				return;
-			}
-			client.sadd(user.id + ':delegated', userId, function(err, res) {
-				if (err) {
-					callback(err, undefined);
-					return;
-				}
-				callback(undefined, user);
-			});
-		});
-	});
-};
-
-var recentTweets = function(req, res) {
-
-    var getClientCallback = function(err, twit) {
-		if (err === null) {
-			var payload = { count: 5 };
-			if (req.params.id !== undefined) {
-				payload.user_id = req.params.id;
-			} else {
-				payload.user_id = req.user.id.toString();
-			}
-			console.log(payload);
-			twit.get('statuses/user_timeline', payload, timelineCallback);
-		} else {
-			console.error(err);
-		}
-	};
-
-	var timelineCallback = function (err, data, response) {
-		var tweets = [''];
-		var closure = tweetEmbedClosure(req.user.id.toString());
-
-		async.map(data, closure, tweetsCallback);
-	};
-
-	var tweetsCallback = function(err, tweets) {
-		if (err) {
-			console.error(err);
-		} else {
-			res.json({
-				"html": tweets.join('\n')
-			});
-		}
-	};
-
-	getClient(req.user.id, getClientCallback);
-};
-
-
-
-var postTweet = function(authorId, postAsID, tweetBody, callback) {
-
-	// TODO ensure the posting account has a delegation
-
-	var tweetCallback = function(err, data, response) {
-		if (err === null) {
-			callback(null, data);
-		} else {
-			callback(err, null);
-		}
-	};
-
-	var getClientCallback = function(err, twit) {
-		if (err === null) {
-			twit.post('statuses/update', { status: tweetBody }, tweetCallback);
-		} else {
-			console.error(err);
-			callback(err, null);
-		}
-	};
-
-	getClient(postAsID, getClientCallback);
-};
 
 // Redirect the user to Twitter for authentication.  When complete, Twitter
 // will redirect the user back to the application at
@@ -355,7 +71,7 @@ app.get('/api/authenticated', function(req, res) {
 });
 
 app.get('/api/delegated-to-accounts', function(req, res) {
-	getDelegatedToAccounts(req.user.id.toString(), function(err, delegatedToAccounts) {
+	fatNest.getDelegatedToAccounts(req.user.id.toString(), function(err, delegatedToAccounts) {
 		if (err) {
 			console.error(err);
 			return;
@@ -368,7 +84,7 @@ app.get('/api/delegated-to-accounts', function(req, res) {
 });
 
 app.get('/api/delegated-accounts', function(req, res) {
-	getDelegatedAccounts(req.user.id.toString(), function(err, delegatedAccounts) {
+	fatNest.getDelegatedAccounts(req.user.id.toString(), function(err, delegatedAccounts) {
 		if (err) {
 			console.error(err);
 			return;
@@ -382,23 +98,43 @@ app.get('/api/delegated-accounts', function(req, res) {
 
 });
 
-app.get('/api/recent-tweets/:id', recentTweets);
-app.get('/api/recent-tweets', recentTweets);
+var handleRecentTweets = function(req, res) {
+	var cb = function(err, tweets) {
+		if (err) {
+			console.error(err);
+			res.json({
+				"error" : err,
+				"html": null
+			});
+		} else {
+			res.json({
+				"error": null,
+				"html": tweets.join('\n')
+			});
+		}
+	};
+
+	var user_id = (req.params.id !== undefined) ? req.params.id : req.user.id.toString();
+	fatNest.recentTweets(user_id, cb);
+};
+
+app.get('/api/recent-tweets/:id', handleRecentTweets);
+app.get('/api/recent-tweets', handleRecentTweets);
 
 app.post('/api/new-delegate', function(req, res) {
-	createDelegate(req.user.id.toString(), req.body.screen_name, function(err, user) {
+	fatNest.createDelegate(req.user.id.toString(), req.body.screen_name, function(err, user) {
 		res.json({ error: err, success: !err, user: user });
 	});
 });
 
 app.post('/api/remove-delegate', function(req, res) {
-	removeDelegate(req.user.id.toString(), req.body.user_id, function(err, result) {
+	fatNest.removeDelegate(req.user.id.toString(), req.body.user_id, function(err, result) {
 		res.json({ error: err, success: !err && result });
 	});
 });
 
 app.post('/api/tweet', function(req, res) {
-	postTweet(req.user.id.toString(), req.body.user_id, req.body.status, function(err, result) {
+	fatNest.postTweet(req.user.id.toString(), req.body.user_id, req.body.status, function(err, result) {
 		if (err === null) {
 			res.json({ success: true, tweet_id: result.id });
 		} else {

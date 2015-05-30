@@ -89,6 +89,7 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 	};
 
 	$scope.tweet = function() {
+		console.log($scope.selectedAccount);
 		tweetPromise = $http.post("/api/tweet", { user_id: $scope.selectedAccount, status: $scope.draft });
 
 		tweetPromise.success(function(data, status, headers, config) {
