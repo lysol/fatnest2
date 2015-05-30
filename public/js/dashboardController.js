@@ -41,8 +41,13 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 		}
 	});
 
+	$scope.checkTweet = function() {
+		return $scope.charCount > 0 && $scope.charCount !== 140;
+	};
+
 	$scope.evalTweet = function() {
 		$scope.charCount = 140 - twttr.txt.getTweetLength($scope.draft);
+		return $scope.checkTweet();
 	};
 
 	$scope.checkDelegate = function() {
@@ -79,6 +84,16 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 				$scope.delegatedToAccounts = $scope.delegatedToAccounts.filter(function(item) {
 					return item.id !== user_id;
 				});
+			}
+		});
+	};
+
+	$scope.tweet = function() {
+		tweetPromise = $http.post("/api/tweet", { user_id: $scope.selectedAccount, status: $scope.draft });
+
+		tweetPromise.success(function(data, status, headers, config) {
+			if (data.success !== undefined && data.success) {
+				$scope.refreshTweets($scope.selectedAccount);
 			}
 		});
 	};

@@ -7,15 +7,16 @@
 						ng-style="{ 'background-image': 'url(' + account.profile_image_url + ')', 'background-repeat': 'no-repeat', 'background-position': 'left' }"
 						ng-selected="{{ primaryAccount.id == account.id }}" 
 						ng-repeat="account in delegatedAccounts" 
-						value="{{ account.screen_name }}"
+						value="{{ account.id }}"
 						>
 						{{ account.screen_name }}
 					</option>
 				</select>
 				<textarea class="u-full-width"
-					ng-model="drah3ft" 
+					ng-model="draft" 
 					ng-change="evalTweet()"
 					></textarea>
+				<button ng-disabled="!checkTweet()" ng-click="tweet()">Tweet</button>
 				<div ng-bind="charCount"></div>
 			</div>
 

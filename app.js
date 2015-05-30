@@ -68,7 +68,7 @@ passport.deserializeUser(function(obj, done) {
 var getClient = function(id, cb) {
 	if (twits[id] === undefined) {
 		client.hgetall(id.toString() + ':keys', function(err, obj) {
-			if (err === null) {
+			if (err === null && obj) {
 				twits[id] = new Twit({
 					consumer_key: config.TWITTER_CONSUMER_KEY,
 					consumer_secret: config.TWITTER_CONSUMER_SECRET,
@@ -76,6 +76,8 @@ var getClient = function(id, cb) {
 					access_token_secret: obj.tokenSecret
 				});
 				cb(null, twits[id]);
+			} else if (err === null && !obj) {
+				cb("No API Client recorded for " + id);
 			} else {
 				cb(err, null);
 			}
@@ -133,7 +135,6 @@ var tweetEmbedClosure = function(userId) {
 
 var getUserCached = function(clientId, userId, callback) {
 	getClient(clientId, function(err, twit) {
-		console.log(err, twit);
 		if (err) {
 			callback(err, null);
 			return;
@@ -271,12 +272,12 @@ var recentTweets = function(req, res) {
     var getClientCallback = function(err, twit) {
 		if (err === null) {
 			var payload = { count: 5 };
-			if (req.params.screen_name !== undefined) {
-				payload.screen_name = req.params.screen_name;
+			if (req.params.id !== undefined) {
+				payload.user_id = req.params.id;
 			} else {
-				payload.id = req.user.id.toString();
+				payload.user_id = req.user.id.toString();
 			}
-
+			console.log(payload);
 			twit.get('statuses/user_timeline', payload, timelineCallback);
 		} else {
 			console.error(err);
@@ -301,6 +302,32 @@ var recentTweets = function(req, res) {
 	};
 
 	getClient(req.user.id, getClientCallback);
+};
+
+
+
+var postTweet = function(authorId, postAsID, tweetBody, callback) {
+
+	// TODO ensure the posting account has a delegation
+
+	var tweetCallback = function(err, data, response) {
+		if (err === null) {
+			callback(null, data);
+		} else {
+			callback(err, null);
+		}
+	};
+
+	var getClientCallback = function(err, twit) {
+		if (err === null) {
+			twit.post('statuses/update', { status: tweetBody }, tweetCallback);
+		} else {
+			console.error(err);
+			callback(err, null);
+		}
+	};
+
+	getClient(postAsID, getClientCallback);
 };
 
 // Redirect the user to Twitter for authentication.  When complete, Twitter
@@ -355,7 +382,7 @@ app.get('/api/delegated-accounts', function(req, res) {
 
 });
 
-app.get('/api/recent-tweets/:screen_name', recentTweets);
+app.get('/api/recent-tweets/:id', recentTweets);
 app.get('/api/recent-tweets', recentTweets);
 
 app.post('/api/new-delegate', function(req, res) {
@@ -367,6 +394,16 @@ app.post('/api/new-delegate', function(req, res) {
 app.post('/api/remove-delegate', function(req, res) {
 	removeDelegate(req.user.id.toString(), req.body.user_id, function(err, result) {
 		res.json({ error: err, success: !err && result });
+	});
+});
+
+app.post('/api/tweet', function(req, res) {
+	postTweet(req.user.id.toString(), req.body.user_id, req.body.status, function(err, result) {
+		if (err === null) {
+			res.json({ success: true, tweet_id: result.id });
+		} else {
+			res.json({ error: err, success: false, tweet_id: null });
+		}
 	});
 });
 
