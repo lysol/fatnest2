@@ -24,13 +24,11 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', '$
 		};	
 
 		$scope.refreshTweets = function() {
-
 			$scope.tweetsLoading = true;
-			if ($scope.selectedAccount) {
-				var endPoint = '/api/recent-tweets/' + $scope.selectedAccount.id;
-			} else {
-				var endPoint = '/api/recent-tweets';
-			}
+			var endPoint = ($scope.selectedAccount) ? 
+				'/api/recent-tweets/' + $scope.selectedAccount.id :
+				'/api/recent-tweets';
+
 			var tweetsPromise = $http.get(endPoint, { cache: resourceCache });
 
 			tweetsPromise.success(function(data, status, headers, config) {
@@ -42,7 +40,7 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', '$
 			    			$scope.$apply();
 			    		});
 			    		$scope._boundTwttr = true;
-			    	};
+			    	}
 
 					twttr.widgets.load(document.getElementById("tweet-container")); 
 			    }, 300); 

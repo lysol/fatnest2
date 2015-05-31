@@ -311,8 +311,10 @@ method.postTweet = function(authorId, postAsID, tweetBody, callback) {
 				}
 			}
 	
-			if (found) this.getTwitterClient(postAsID, getClientCallback)
-				else callback("Access denied", null);
+			if (found) 
+				this.getTwitterClient(postAsID, getClientCallback);
+			else 
+				callback("Access denied", null);
 		}).bind(this);
 
 	var tweetCallback = (function(err, data, response) {

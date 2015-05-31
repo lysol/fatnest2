@@ -11,18 +11,24 @@
 <!-- iOS -->
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
+<!-- bower:less -->
+<link rel="stylesheet/less" href="bower_components/semantic-ui/src/semantic.less" />
+<!-- endbower -->
+
+<link rel="stylesheet/less" href="less/style.less" />
 
 <!-- bower:css -->
-<link rel="stylesheet" href="bower_components/skeleton/css/skeleton.css" />
-<link rel="stylesheet" href="css/style.css" />
 <!-- endbower -->
 
 <!-- bower:js -->
+<script src="bower_components/jquery/dist/jquery.js"></script>
 <script src="bower_components/angular/angular.js"></script>
 <script src="bower_components/angular-messages/angular-messages.js"></script>
 <script src="bower_components/angular-resource/angular-resource.js"></script>
 <script src="bower_components/angular-route/angular-route.js"></script>
 <script src="bower_components/twitter-text/twitter-text.js"></script>
+<script src="bower_components/less/dist/less.js"></script>
+<script src="bower_components/semantic-ui/dist/semantic.js"></script>
 <!-- endbower -->
 
 <script type="text/javascript" src="js/app.js"></script>
@@ -35,11 +41,9 @@
 <body>
 	<div class="container">
 
-		<div class="row">
-			<header><h1>f a t n e s t</h1></header>
-		</div>
+		<header><h1 class="ui header">f a t n e s t</h1></header>
 
-		<div class="main" ng-controller="fatnestController">
+		<div class="ui" ng-controller="fatnestController">
 				
 				<div ng-view>
 

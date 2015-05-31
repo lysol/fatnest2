@@ -5,7 +5,7 @@ var session = require('express-session');
 var bodyParser = require('body-parser');
 var passport = require('passport');
 var TwitterStrategy = require('passport-twitter').Strategy;
-var swig = require('swig')
+var swig = require('swig');
 
 var RedisStore = require('connect-redis')(session);
 var FatNest = require('./fatnest');
@@ -186,7 +186,7 @@ var indexHandler = function(req, res) {
 
 			payload['/api/delegated-to-accounts'] = {
 					"delegated-to-accounts": delegatedToAccounts
-				}
+				};
 
 			fatNest.recentTweets(req.user.id.toString(), recentTweetsCB);
 		};
