@@ -14,6 +14,15 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', '$
 
 		$scope._boundTwttr = false;
 
+		$scope.accountIsSelected = function(user) {
+			return $scope.selectedAccount.id.toString() === user.id.toString();
+		};
+
+		$scope.selectAccount = function(user) {
+			$scope.selectedAccount = user;
+			$scope.refreshTweets();
+		};	
+
 		$scope.refreshTweets = function() {
 
 			$scope.tweetsLoading = true;
@@ -49,7 +58,7 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', '$
 
 				delegatedFromPromise.success(function(data, status, headers, config) {
 					$scope.delegatedAccounts = data['delegated-accounts'];
-					$scope.primaryAccount = data['primary-account'];		
+					$scope.primaryAccount = data['primary-account'];	
 					$scope.selectedAccount = $scope.primaryAccount;
 				});
 

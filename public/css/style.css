@@ -9,4 +9,108 @@ a {
 
 h1, h2, h3, h4, h5, h6 {
 	text-transform: uppercase;
+	font-weight: bold;
+}
+
+header {
+	z-index: -100;
+}
+
+	header h1 {
+		font-size: 138pt;
+		margin-bottom: -49px;
+		margin-top: -120px;
+		font-weight: 600;
+	}
+
+
+h3 {
+	font-size: 3.6rem;
+}
+
+div.main {
+	z-index: 100;
+}
+
+.row {
+	margin-bottom: 6ex;
+}
+
+button {
+	background-color: #444;
+	color: #FFF;
+	border-radius: 0;
+	font-size: 13pt;
+	border: 0;
+}
+	button:hover {
+		color: #CCC;
+		background-color: #494;
+	}
+
+.account-list {
+}
+	.account-list li {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		background-color: #EEE;
+	}
+		.account-list li:hover, .account-list li:nth-child(2):hover {
+			background-color: #000;
+		}
+			.account-list li:hover a, .account-list li:nth-child(2):hover a, 
+			.account-list li:hover span, .account-list li:nth-child(2):hover span {
+				color: #FFF;
+			}
+
+		.account-list li a, .account-list li span {
+			display: block;
+			padding: 3ex;
+			text-decoration: none;
+			color: #000;
+			font-size: 13pt;
+			position: relative;
+		}
+			.account-list li span .x {
+				position: absolute;
+				top: 0;
+				right: 0;
+				background-color: #F00;
+				color: #FFF;
+				font-weight: bold;
+				border: 0;
+				border-radius: 0;
+				font-size: 14pt;
+			}
+
+			.account-list li a.active, .account-list li a.visited, .account-list li a.hover {
+				text-decoration: none;
+				color: #000;
+			}
+				.account-list li.active:hover {
+					background-color: #000;
+				}
+
+			.account-list li a img, .account-list li span img {
+				vertical-align: middle;
+				margin-right: 3ex;
+			}
+
+	.account-list li:nth-child(2) {
+		background-color: #DDD;
+	}
+
+	.account-list li.active {
+		background-color: #DFD;
+	}
+
+input[name="newDelegate"] {
+	font-size: 14pt;
+	padding: .6ex 0.1ex;
+	width: 62%;
+}
+
+.dangerous {
+	color: #F00;
 }

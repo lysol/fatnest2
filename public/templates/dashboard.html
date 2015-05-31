@@ -2,25 +2,37 @@
 		<div class="four columns">
 			<div class="row">
 				<h3>Tweet</h3>
-				<select ng-model="selectedAccount" ng-change="refreshTweets(selectedAccount)" ng-options="account.screen_name for account in delegatedAccounts track by account.id">
-				</select>
+	
+				<ul class="account-list">
+					<li ng-repeat="account in delegatedAccounts" ng-class="{active : accountIsSelected(account)}">
+						<a href="#" ng-click="selectAccount(account)">
+							<img ng-src="{{ account.profile_image_url }}" alt="{{ account.screen_name }}">
+							{{ account.screen_name }}
+						</a>
+					</li>
+				</ul>
+
 				<textarea class="u-full-width"
 					ng-model="draft" 
 					ng-change="evalTweet()"
 					></textarea>
-				<button ng-disabled="!checkTweet()" ng-click="tweet()">Tweet</button>
-				<div ng-bind="charCount"></div>
+				<button ng-disabled="!checkTweet()" ng-click="tweet()">Tweet</button> 
+				<span ng-bind="charCount" ng-class="{dangerous: charCount < 20}"></span>
 			</div>
 
 			<div class="row">
 				<h3>Delegate your account</h3>
 			
-				<ul>
+				<ul class="account-list">
 					<li ng-repeat="account in delegatedToAccounts">
-						{{ account.screen_name }}
-						<button ng-click="removeDelegate(account.id)">X</button>
+						<span>
+							<img ng-src="{{ account.profile_image_url }}" alt="{{ account.screen_name }}">
+							{{ account.screen_name }}
+							<button class="x" ng-click="removeDelegate(account.id)">X</button>
+						</span>
 					</li>
 				</ul>
+
 				<form name="newDelegateForm" novalidate ng-submit="checkDelegate()">
 				<input name="newDelegate" ng-model="newDelegate" required>
 				<button>Add</button>
