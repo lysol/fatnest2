@@ -5,6 +5,7 @@ var session = require('express-session');
 var bodyParser = require('body-parser');
 var passport = require('passport');
 var TwitterStrategy = require('passport-twitter').Strategy;
+var swig = require('swig')
 
 var RedisStore = require('connect-redis')(session);
 var FatNest = require('./fatnest');
@@ -23,6 +24,10 @@ app.use(passport.session({
 	}
 }));
 app.use(bodyParser.json());
+app.engine('html', swig.renderFile);
+
+app.set('view engine', 'html');
+app.set('views', __dirname + '/public');
 
 
 
@@ -146,7 +151,38 @@ app.post('/api/tweet', function(req, res) {
 app.all('/api/*', ensureAuthenticated);
 
 app.get('/dashboard', ensureAuthenticated, function(req, res) {
-	res.sendFile('./public/index.html', { root: __dirname });
+
+	var payload = {
+		cached_data: true
+	};
+
+	delegatedAccountCB = function(err, delegatedAccounts) {
+		if (err) {
+			console.error(err);
+			return;
+		}
+
+		payload['/api/delegated-accounts'] = {
+				"primary-account": req.user,
+				"delegated-accounts": delegatedAccounts
+			};
+		fatNest.getDelegatedToAccounts(req.user.id.toString(), delegatedToAccountCB);
+	};
+
+	delegatedToAccountCB = function(err, delegatedToAccounts) {
+		if (err) {
+			console.error(err);
+			return;
+		}
+
+		payload['/api/delegated-to-accounts'] = {
+				"delegated-to-accounts": delegatedToAccounts
+			}
+
+		res.render('index.html', { body_dataset: payload });
+	};
+
+	fatNest.getDelegatedAccounts(req.user.id.toString(), delegatedAccountCB);
 });
 
 var server = app.listen(3000, function () {

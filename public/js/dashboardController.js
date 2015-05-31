@@ -1,4 +1,4 @@
-App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', function($scope, $sce, $http, $timeout) {
+App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', 'resourceCache', function($scope, $sce, $http, $timeout, resourceCache) {
 	$scope.tweets = '';
 	$scope.draft = '';
 	$scope.charCount = 140;
@@ -24,14 +24,14 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', fu
 		if (data.authenticated !== undefined && data.authenticated) {
 			$scope.refreshTweets();
 
-			var delegatedFromPromise = $http.get("/api/delegated-accounts");
+			var delegatedFromPromise = $http.get("/api/delegated-accounts", { cache: resourceCache });
 
 			delegatedFromPromise.success(function(data, status, headers, config) {
 				$scope.delegatedAccounts = data['delegated-accounts'];
 				$scope.primaryAccount = data['primary-account'];				
 			});
 
-			var delegatedToPromise = $http.get("/api/delegated-to-accounts");
+			var delegatedToPromise = $http.get("/api/delegated-to-accounts", { cache: resourceCache });
 
 			delegatedToPromise.success(function(data, status, headers, config) {
 				$scope.delegatedToAccounts = data['delegated-to-accounts'];

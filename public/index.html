@@ -25,6 +25,7 @@
 <!-- endbower -->
 
 <script type="text/javascript" src="js/app.js"></script>
+<script type="text/javascript" src="js/resourceCacheService.js"></script>
 <script type="text/javascript" src="js/homeController.js"></script>
 <script type="text/javascript" src="js/fatnestController.js"></script>
 <script type="text/javascript" src="js/dashboardController.js"></script>
@@ -48,6 +49,10 @@
 				</div>
 			</div>
 		</div>
+
+		{% if body_dataset|default(false) %}
+		<div type="text/javascript" preload-body='{{ body_dataset|json }}'></div>
+		{% endif %}
 	</body>
 </body>
 </html>
