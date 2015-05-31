@@ -17,9 +17,10 @@ header {
 }
 
 	header h1 {
-		font-size: 138pt;
+		font-size: 70pt;
+		text-align: justify;
 		margin-bottom: -49px;
-		margin-top: -120px;
+		margin-top: -90px;
 		font-weight: 600;
 	}
 
