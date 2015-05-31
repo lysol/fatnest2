@@ -2,15 +2,7 @@
 		<div class="four columns">
 			<div class="row">
 				<h3>Tweet</h3>
-				<select ng-model="selectedAccount" ng-change="refreshTweets(selectedAccount)">
-					<option 
-						ng-style="{ 'background-image': 'url(' + account.profile_image_url + ')', 'background-repeat': 'no-repeat', 'background-position': 'left' }"
-						ng-selected="{{ primaryAccount.id == account.id }}" 
-						ng-repeat="account in delegatedAccounts" 
-						value="{{ account.id }}"
-						>
-						{{ account.screen_name }}
-					</option>
+				<select ng-model="selectedAccount" ng-change="refreshTweets(selectedAccount)" ng-options="account.screen_name for account in delegatedAccounts track by account.id">
 				</select>
 				<textarea class="u-full-width"
 					ng-model="draft" 
@@ -44,9 +36,24 @@
 			</div>
 		</div>
 
-		<div class="eight columns" ng-bind-html="tweets">
+		<div class="eight columns" ng-bind-html="tweets" ng-hide="tweetsLoading">
 
 		</div>
 	</div>
 
-
+	<script>window.twttr = (function(d, s, id) {
+	  var js, fjs = d.getElementsByTagName(s)[0],
+	    t = window.twttr || {};
+	  if (d.getElementById(id)) return t;
+	  js = d.createElement(s);
+	  js.id = id;
+	  js.src = "https://platform.twitter.com/widgets.js";
+	  fjs.parentNode.insertBefore(js, fjs);
+	 
+	  t._e = [];
+	  t.ready = function(f) {
+	    t._e.push(f);
+	  };
+	 
+	  return t;
+	}(document, "script", "twitter-wjs"));</script>

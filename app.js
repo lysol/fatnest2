@@ -35,7 +35,7 @@ swig.setFilter('entityEscape', function (input) {
 });
 
 app.set('view engine', 'html');
-app.set('views', __dirname + '/public');
+app.set('views', __dirname + '/views');
 
 
 
@@ -157,6 +157,10 @@ app.post('/api/tweet', function(req, res) {
 });
 
 app.all('/api/*', ensureAuthenticated);
+
+app.get('/', function(req, res) {
+	res.render('index.html');
+});
 
 app.get('/dashboard', ensureAuthenticated, function(req, res) {
 
