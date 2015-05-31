@@ -68,7 +68,7 @@ method.tweetEmbed = function(userId, tweet, cb) {
 				cb(err, null);
 				return;
 			}
-			twit.get('statuses/oembed', { id: tweetId }, oembedCB);
+			twit.get('statuses/oembed', { id: tweetId, omit_script: true, hide_thread: true }, oembedCB);
 		}).bind(this);
 
 	var oembedCB = (function(err, data, response) {
@@ -79,7 +79,8 @@ method.tweetEmbed = function(userId, tweet, cb) {
 	
 			// strip out js.
 			newhtml = data.html.replace(this._config.TWITTER_JS, '');
-			this._redisClient.set('tweet_' + tweetId, newhtml, setTweetCB);
+			console.log(data.html);
+			this._redisClient.set('tweet_' + tweetId, data.html, setTweetCB);
 		}).bind(this);
 
 	var setTweetCB = (function(err) {

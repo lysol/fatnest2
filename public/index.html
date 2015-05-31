@@ -51,7 +51,7 @@
 		</div>
 
 		{% if body_dataset|default(false) %}
-		<div type="text/javascript" preload-body='{{ body_dataset|json }}'></div>
+		<div preload-body="{{ body_dataset|json|safe|entityEscape }}"></div>
 		{% endif %}
 	</body>
 </body>

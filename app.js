@@ -25,6 +25,14 @@ app.use(passport.session({
 }));
 app.use(bodyParser.json());
 app.engine('html', swig.renderFile);
+swig.setFilter('entityEscape', function (input) {
+	return input
+		// .replace(/\\/g, '\\\\')
+		.replace(/&/g, '&amp;')
+		.replace(/"/g, '&quot;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;');
+});
 
 app.set('view engine', 'html');
 app.set('views', __dirname + '/public');
@@ -179,7 +187,26 @@ app.get('/dashboard', ensureAuthenticated, function(req, res) {
 				"delegated-to-accounts": delegatedToAccounts
 			}
 
+		fatNest.recentTweets(req.user.id.toString(), recentTweetsCB);
+	};
+
+	recentTweetsCB = function(err, tweets) {
+
+		if (err) {
+			console.error(err);
+			payload['/api/recent-tweets'] = {
+				"error" : err,
+				"html": null
+			};
+		} else {
+			payload['/api/recent-tweets'] = {
+				"error": null,
+				"html": tweets.join('\n')
+			};
+		}
+
 		res.render('index.html', { body_dataset: payload });
+
 	};
 
 	fatNest.getDelegatedAccounts(req.user.id.toString(), delegatedAccountCB);

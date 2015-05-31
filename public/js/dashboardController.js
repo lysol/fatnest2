@@ -11,7 +11,7 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', 'r
 
 	$scope.refreshTweets = function(screen_name) {
 		var endPoint = (screen_name !== undefined) ? '/api/recent-tweets/' + screen_name : '/api/recent-tweets';
-		var tweetsPromise = $http.get(endPoint);
+		var tweetsPromise = $http.get(endPoint, { cache: resourceCache });
 
 		tweetsPromise.success(function(data, status, headers, config) {
 		    $scope.tweets = $sce.trustAsHtml(data.html);
