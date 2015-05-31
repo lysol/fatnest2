@@ -12,17 +12,31 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', '$
 
 		var authenticatedPromise = $http.get("/api/authenticated");
 
-		$scope.refreshTweets = function(user) {
+		$scope._boundTwttr = false;
+
+		$scope.refreshTweets = function() {
+
 			$scope.tweetsLoading = true;
-			var endPoint = (user !== undefined) ? '/api/recent-tweets/' + user.id : '/api/recent-tweets';
+			if ($scope.selectedAccount) {
+				var endPoint = '/api/recent-tweets/' + $scope.selectedAccount.id;
+			} else {
+				var endPoint = '/api/recent-tweets';
+			}
 			var tweetsPromise = $http.get(endPoint, { cache: resourceCache });
 
 			tweetsPromise.success(function(data, status, headers, config) {
 			    $scope.tweets = $sce.trustAsHtml(data.html);
 			    $timeout(function () { 
-			    	twttr.widgets.load(); 
-			    	$scope.tweetsLoading = false; 
-			    }, 500); 
+			    	if (!$scope._boundTwttr) {
+			    		twttr.events.bind('loaded', function (event) { 
+			    			$scope.tweetsLoading = false;
+			    			$scope.$apply();
+			    		});
+			    		$scope._boundTwttr = true;
+			    	};
+
+					twttr.widgets.load(document.getElementById("tweet-container")); 
+			    }, 300); 
 			});
 		};
 
@@ -97,12 +111,11 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', '$
 		};
 
 		$scope.tweet = function() {
-			console.log($scope.selectedAccount);
-			tweetPromise = $http.post("/api/tweet", { user_id: $scope.selectedAccount, status: $scope.draft });
+			tweetPromise = $http.post("/api/tweet", { user_id: $scope.selectedAccount.id, status: $scope.draft });
 
 			tweetPromise.success(function(data, status, headers, config) {
 				if (data.success !== undefined && data.success) {
-					$scope.refreshTweets($scope.selectedAccount);
+					$scope.refreshTweets();
 				}
 			});
 		};

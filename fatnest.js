@@ -299,6 +299,22 @@ method.postTweet = function(authorId, postAsID, tweetBody, callback) {
 
 	// TODO ensure the posting account has a delegation
 
+	var getDelegatedCB = (function(err, users) {
+	
+			var found = false;
+	
+			for(var u in users) {
+				console.log(users[u], postAsID);
+				if (postAsID == users[u].id) {
+					found = true;
+					break;
+				}
+			}
+	
+			if (found) this.getTwitterClient(postAsID, getClientCallback)
+				else callback("Access denied", null);
+		}).bind(this);
+
 	var tweetCallback = (function(err, data, response) {
 			if (err === null) {
 				callback(null, data);
@@ -316,7 +332,9 @@ method.postTweet = function(authorId, postAsID, tweetBody, callback) {
 			}
 		}).bind(this);
 
-	this.getTwitterClient(postAsID, getClientCallback);
+
+	this.getDelegatedAccounts(authorId, getDelegatedCB);
+
 };
 
 

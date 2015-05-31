@@ -158,63 +158,67 @@ app.post('/api/tweet', function(req, res) {
 
 app.all('/api/*', ensureAuthenticated);
 
-app.get('/', function(req, res) {
-	res.render('index.html');
-});
+var indexHandler = function(req, res) {
 
-app.get('/dashboard', ensureAuthenticated, function(req, res) {
+	if (req.user !== undefined) {
+		var payload = {
+			cached_data: true
+		};
 
-	var payload = {
-		cached_data: true
-	};
-
-	delegatedAccountCB = function(err, delegatedAccounts) {
-		if (err) {
-			console.error(err);
-			return;
-		}
-
-		payload['/api/delegated-accounts'] = {
-				"primary-account": req.user,
-				"delegated-accounts": delegatedAccounts
-			};
-		fatNest.getDelegatedToAccounts(req.user.id.toString(), delegatedToAccountCB);
-	};
-
-	delegatedToAccountCB = function(err, delegatedToAccounts) {
-		if (err) {
-			console.error(err);
-			return;
-		}
-
-		payload['/api/delegated-to-accounts'] = {
-				"delegated-to-accounts": delegatedToAccounts
+		delegatedAccountCB = function(err, delegatedAccounts) {
+			if (err) {
+				console.error(err);
+				return;
 			}
 
-		fatNest.recentTweets(req.user.id.toString(), recentTweetsCB);
-	};
+			payload['/api/delegated-accounts'] = {
+					"primary-account": req.user,
+					"delegated-accounts": delegatedAccounts
+				};
+			fatNest.getDelegatedToAccounts(req.user.id.toString(), delegatedToAccountCB);
+		};
 
-	recentTweetsCB = function(err, tweets) {
+		delegatedToAccountCB = function(err, delegatedToAccounts) {
+			if (err) {
+				console.error(err);
+				return;
+			}
 
-		if (err) {
-			console.error(err);
-			payload['/api/recent-tweets'] = {
-				"error" : err,
-				"html": null
-			};
-		} else {
-			payload['/api/recent-tweets'] = {
-				"error": null,
-				"html": tweets.join('\n')
-			};
-		}
+			payload['/api/delegated-to-accounts'] = {
+					"delegated-to-accounts": delegatedToAccounts
+				}
 
-		res.render('index.html', { body_dataset: payload });
+			fatNest.recentTweets(req.user.id.toString(), recentTweetsCB);
+		};
 
-	};
+		recentTweetsCB = function(err, tweets) {
 
-	fatNest.getDelegatedAccounts(req.user.id.toString(), delegatedAccountCB);
-});
+			if (err) {
+				console.error(err);
+				payload['/api/recent-tweets'] = {
+					"error" : err,
+					"html": null
+				};
+			} else {
+				payload['/api/recent-tweets'] = {
+					"error": null,
+					"html": tweets.join('\n')
+				};
+			}
+
+			res.render('index.html', { body_dataset: payload });
+
+		};
+
+		fatNest.getDelegatedAccounts(req.user.id.toString(), delegatedAccountCB);
+	} else {
+		res.render('index.html');
+	}
+};
+
+app.get('/', indexHandler);
+
+app.get('/dashboard', ensureAuthenticated, indexHandler);
 
 var server = app.listen(3000, function () {
 	var host = server.address().address;
