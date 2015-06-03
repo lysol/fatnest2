@@ -25,6 +25,6 @@
     "angular-route": "~1.4.0",
     "twitter-text": "~1.10.0",
     "less": "~2.5.1",
-    "semantic-ui": "~1.12.3"
+    "skeleton": "~2.0.4"
   }
 }

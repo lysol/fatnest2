@@ -31,19 +31,19 @@ module.exports = function(grunt) {
 			}
 		},
 
-		shell: {
-			makeSemantic: {
-				command: function() {
-					return "cd public/bower_components/semantic-ui/ && gulp build";
-				}
-			}
-		}
+// 		shell: {
+// 			makeSemantic: {
+// 				command: function() {
+// 					return "cd public/bower_components/semantic-ui/ && gulp build";
+// 				}
+// 			}
+// 		}
 
 	});
 
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-wiredep');
-	grunt.loadNpmTasks('grunt-shell');
+// 	grunt.loadNpmTasks('grunt-shell');
 
-	grunt.registerTask('default', ['jshint', 'wiredep', 'shell']);
+	grunt.registerTask('default', ['jshint', 'wiredep']);
 };
