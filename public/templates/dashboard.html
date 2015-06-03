@@ -3,7 +3,7 @@
 			<div class="row">
 				<h3>Tweet</h3>
 	
-				<ul class="account-list">
+				<ul id="delegated-from" class="account-list">
 					<li ng-repeat="account in delegatedAccounts" ng-class="{active : accountIsSelected(account)}">
 						<a href="#" ng-click="selectAccount(account)">
 							<img ng-src="{{ account.profile_image_url }}" alt="{{ account.screen_name }}">
@@ -12,18 +12,18 @@
 					</li>
 				</ul>
 
-				<textarea class="u-full-width"
+				<textarea class="u-full-width draftbox"
 					ng-model="draft" 
 					ng-change="evalTweet()"
 					></textarea>
 				<button ng-disabled="!checkTweet()" ng-click="tweet()">Tweet</button> 
-				<span ng-bind="charCount" ng-class="{dangerous: charCount < 20}"></span>
+				<span id="charCount" ng-bind="charCount" ng-class="{ dangerous: charCount < 20 && charCount > 0, impossible: charCount <= 0 }"></span>
 			</div>
 
 			<div class="row">
 				<h3>Delegate your account</h3>
 			
-				<ul class="account-list">
+				<ul id="delegated-to" class="account-list">
 					<li ng-repeat="account in delegatedToAccounts">
 						<span>
 							<img ng-src="{{ account.profile_image_url }}" alt="{{ account.screen_name }}">
@@ -48,8 +48,11 @@
 			</div>
 		</div>
 
-		<div id="tweet-container" class="eight columns" ng-bind-html="tweets" ng-hide="tweetsLoading">
-
+		<div class="eight columns">
+			<h3>Recent Tweets by @{{ selectedAccount.username }}</h3>
+			<div id="tweet-container" ng-bind-html="tweets" ng-hide="tweetsLoading">
+				
+			</div>
 		</div>
 	</div>
 

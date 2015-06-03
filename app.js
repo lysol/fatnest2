@@ -7,16 +7,13 @@ var passport = require('passport');
 var TwitterStrategy = require('passport-twitter').Strategy;
 var swig = require('swig');
 
-var RedisStore = require('connect-redis')(session);
+// var RedisStore = require('connect-redis')(session);
 var FatNest = require('./fatnest');
 var fatNest = new FatNest(config);
 
 app.use(allowLocalAccess);
 app.use(express.static('public'));
-app.use(session({ store: new RedisStore({
-  host: '127.0.0.1',
-  port: 6379
-}), secret: 'sdklfjdsklghk flkjouxn89ecgosyecogvyseo8ycgoghmeshgsgsetest87s8te8st78str78trsDTUPLU:DTY:RSYKSRY:LKJRSYSJYY' }));
+app.use(session({ secret: 'sdklfjdsklghk flkjouxn89ecgosyecogvyseo8ycgoghmeshgsgsetest87s8te8st78str78trsDTUPLU:DTY:RSYKSRY:LKJRSYSJYY' }));
 app.use(passport.initialize());
 app.use(passport.session({
 	cookie: {

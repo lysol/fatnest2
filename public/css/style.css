@@ -17,11 +17,12 @@ header {
 }
 
 	header h1 {
-		font-size: 9vw;
-		text-align: center;
+		font-size: 11vw;
+		text-align: left;
 		margin-bottom: -49px;
-		margin-top: -90px;
+		margin-top: -70px;
 		font-weight: 600;
+		white-space: nowrap;
 	}
 
 
@@ -57,17 +58,16 @@ button {
 		margin: 0;
 		background-color: #EEE;
 	}
-		.account-list li:hover, .account-list li:nth-child(2):hover {
+		#delegated-from.account-list li:hover, #delegated-from.account-list li:nth-child(2):hover {
 			background-color: #000;
 		}
-			.account-list li:hover a, .account-list li:nth-child(2):hover a, 
-			.account-list li:hover span, .account-list li:nth-child(2):hover span {
+			#delegated-from.account-list li:hover a, #delegated-from.account-list li:nth-child(2):hover a, 
+			#delegated-from.account-list li:hover span, #delegated-from.account-list li:nth-child(2):hover span {
 				color: #FFF;
 			}
 
 		.account-list li a, .account-list li span {
 			display: block;
-			padding: 3ex;
 			text-decoration: none;
 			color: #000;
 			font-size: 13pt;
@@ -85,11 +85,11 @@ button {
 				font-size: 14pt;
 			}
 
-			.account-list li a.active, .account-list li a.visited, .account-list li a.hover {
+			.account-list li a.active, .account-list li a.visited, .account-list li a:hover {
 				text-decoration: none;
 				color: #000;
 			}
-				.account-list li.active:hover {
+				#delegated-from.account-list li.active:hover {
 					background-color: #000;
 				}
 
@@ -103,15 +103,51 @@ button {
 	}
 
 	.account-list li.active {
-		background-color: #DFD;
+		background-color: #F00;
+		color: #FFF;
+		font-weight: bold;
 	}
+		.account-list li.active a {
+			color: #FFF;
+		}
 
 input[name="newDelegate"] {
 	font-size: 14pt;
 	padding: .6ex 0.1ex;
-	width: 62%;
+	width: 72%;
 }
 
 .dangerous {
+	color: #A00;
+}
+
+.impossible {
 	color: #F00;
+}
+
+.draftbox {
+	height: 150px;
+}
+
+.container textarea, .container button {
+	border-radius: 0;
+}
+
+.container textarea {
+	font-size: 13pt;
+}
+
+.container button {
+	background-color: #000;
+	color: #FFF;
+	font-size: 13pt;
+}
+	.container button:hover {
+		color: #DDD;
+		background-color: #222;
+	}
+
+#charCount {
+	font-size: 16pt;
+	font-weight: bold;
 }
