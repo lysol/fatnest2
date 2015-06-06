@@ -30,20 +30,20 @@ module.exports = function(grunt) {
 				directory: "public/bower_components"
 			}
 		},
-
-// 		shell: {
-// 			makeSemantic: {
-// 				command: function() {
-// 					return "cd public/bower_components/semantic-ui/ && gulp build";
-// 				}
-// 			}
-// 		}
+		jsdoc : {
+		        dist : {
+		            src: ['fatnest.js', 'app.js', 'public/js/*.js'],
+		            options: {
+		                destination: 'doc'
+		            }
+		        }
+		    }
 
 	});
 
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-wiredep');
-// 	grunt.loadNpmTasks('grunt-shell');
+	grunt.loadNpmTasks('grunt-jsdoc');
 
-	grunt.registerTask('default', ['jshint', 'wiredep']);
+	grunt.registerTask('default', ['jshint', 'wiredep', 'jsdoc']);
 };
