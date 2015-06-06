@@ -73,42 +73,6 @@ FatNest.prototype._tweetEmbedClosure = function(userId) {
 };
 
 /**
- * Map Twitter users to IDs
- * @param  {string}   clientId The ID of the user executing this operation
- * @param  {array}   userIDs  An array of user IDs
- * @param  {Function} callback callback(err, users)
- * @return {Function}            Returns this for chaining
- */
-FatNest.prototype._getTwitterUsersForIDs = function(clientId, userIDs, callback) {
-	var mapper = (function(twitterId, cb) {
-			twitterId = twitterId.toString();
-
-			var closure = function(err, user) {
-				if (err) {
-					cb(err, null);
-				} else {
-					cb(null, user);
-				}
-			};
-
-			this.getUser(clientId, twitterId, closure);
-		}).bind(this);
-
-	var closureCB = (function(err, twitterUsers) {
-			if (err) {
-				callback(err,  null);
-				return;
-			}
-	
-			callback(null, twitterUsers);
-		}).bind(this);
-
-	async.map(userIDs, mapper, closureCB);
-
-	return this;
-};
-
-/**
  * This method gets a Twitter client for a user for that has been delegated to another user,
  * and checks to ensure that this is allowed.
  * 				
@@ -204,6 +168,61 @@ FatNest.prototype.getUser = function(clientId, userId, callback) {
 
 
 /**
+ * Get a list of users given the list of user IDs
+ * @param  {string}   clientId The ID of the requesting user
+ * @param  {array}   userIds  The list of string IDs to retrieve users for
+ * @param  {Function} callback callback(err, users)
+ * @return {Function}            Return this for chaining
+ */
+FatNest.prototype.getUsers = function(clientId, userIds, callback) {
+
+	var users = [];
+	var newUserIds = [];
+
+	// Make the real list of users to retrieve
+
+	for(var u in userIds) {
+			var twitterId = userIds[u];
+			if (this._userCache[twitterId] !== undefined) {
+				users.push(this._userCache[twitterId]);
+			} else {
+				newUserIds.push(twitterId);
+			}
+	}
+
+	if (newUserIds.length > 100) {
+		throw "Too many user to fetch from Twitter";
+	}
+
+	var twitterClientCB = (function(err, twit) {
+			if (err) {
+				callback(err, null);
+				return;
+			}
+	
+			if (newUserIds.length > 0) {
+				twit.post('users/lookup', { user_id: newUserIds }, lookupCB);
+			} else {
+				callback(null, users);
+			}
+		}).bind(this);
+
+	var lookupCB = (function(err, outUsers) {
+			for(var u in outUsers) {
+				var user = outUsers[u];
+				this._userCache[user.id] = user;
+				users.push(user);
+			}
+			callback(null, users);
+		}).bind(this);
+
+	this._getTwitterClient(clientId, twitterClientCB);
+
+	return this;
+};
+
+
+/**
  * Get the OEmbed markup for a tweet
  * @param  {string}   userId The user ID requesting the OEmbed
  * @param  {Object}   tweet  The previously fetched Tweet from Twitter
@@ -275,7 +294,9 @@ FatNest.prototype.getDelegatedToAccounts = function(userId, callback) {
 				return;
 			}
 	
-			this._getTwitterUsersForIDs(userId, twitter_ids, usersCB);			
+			// FIXME handle this in a non-hacky way
+			twitter_ids = twitter_ids.slice(0, 100);
+			this.getUsers(userId, twitter_ids, usersCB);
 		}).bind(this);
 
 	var usersCB = (function(err, users) {
@@ -308,7 +329,9 @@ FatNest.prototype.getDelegatedAccounts = function(userId, callback) {
 				return;
 			}
 	
-			this._getTwitterUsersForIDs(userId, twitter_ids, twitterUsersCB);
+			// FIXME handle this in a non-hacky way
+			twitter_ids = twitter_ids.slice(0, 100);
+			this.getUsers(userId, twitter_ids, twitterUsersCB);
 		}).bind(this);
 
 	var twitterUsersCB = (function(err, users) {
