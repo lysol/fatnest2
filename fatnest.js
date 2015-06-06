@@ -102,7 +102,7 @@ method.tweetEmbedClosure = function(userId) {
 		}).bind(this);
 };
 
-method.getUserCached = function(clientId, userId, callback) {
+method.getUser = function(clientId, userId, callback) {
 
 	var twitterClientCB = (function(err, twit) {
 			if (err) {
@@ -147,7 +147,7 @@ method.getTwitterUsersForIDs = function(clientId, userIDs, callback) {
 				}
 			};
 
-			this.getUserCached(clientId, twitterId, closure);
+			this.getUser(clientId, twitterId, closure);
 		}).bind(this);
 
 	var closureCB = (function(err, twitterUsers) {
@@ -204,7 +204,7 @@ method.getDelegatedAccounts = function(userId, callback) {
 				return;
 			}
 			tempUsers = users;
-			this.getUserCached(userId, userId, cachedUserCB);
+			this.getUser(userId, userId, cachedUserCB);
 		}).bind(this);
 
 	var cachedUserCB = (function(err, user) {
@@ -272,7 +272,7 @@ method.createDelegate = function(userId, screenName, callback) {
 			callback(undefined, delegateUser);
 		}).bind(this);
 
-	this.getUserCached(userId, screenName, cachedUserCB);
+	this.getUser(userId, screenName, cachedUserCB);
 };
 
 // returns html
@@ -295,35 +295,53 @@ method.recentTweets = function(user_id, callback) {
 	this.getTwitterClient(user_id, getClientCallback);
 };
 
-method.postTweet = function(authorId, postAsID, tweetBody, callback) {
-
-	// TODO ensure the posting account has a delegation
+method._getTwitterClientFor = function(forId, fromId, callback) {
 
 	var getDelegatedCB = (function(err, users) {
 	
 			var found = false;
 	
 			for(var u in users) {
-				console.log(users[u], postAsID);
-				if (postAsID == users[u].id) {
+				console.log(users[u], fromId);
+				if (fromId == users[u].id) {
 					found = true;
 					break;
 				}
 			}
 	
 			if (found) 
-				this.getTwitterClient(postAsID, getClientCallback);
+				this.getTwitterClient(fromId, callback);
 			else 
 				callback("Access denied", null);
+		}).bind(this);	
+
+	this.getDelegatedAccounts(forId, getDelegatedCB);
+};
+
+method.removeTweet = function(authorId, deleteAsId, tweetId, callback) {
+
+	var getClientCallback = (function(err, twit) {
+			if (err === null) {
+				twit.post('statuses/destroy/' + tweetId, deleteCallback);
+			} else {
+				console.error(err);
+				callback(err, null);
+			}
 		}).bind(this);
 
-	var tweetCallback = (function(err, data, response) {
+	var deleteCallback = (function(err, data, response) {
 			if (err === null) {
 				callback(null, data);
 			} else {
 				callback(err, null);
 			}
 		}).bind(this);
+
+	this._getTwitterClientFor(authorId, deleteAsId, getClientCallback);
+
+}
+
+method.postTweet = function(authorId, postAsId, tweetBody, callback) {
 
 	var getClientCallback = (function(err, twit) {
 			if (err === null) {
@@ -334,8 +352,15 @@ method.postTweet = function(authorId, postAsID, tweetBody, callback) {
 			}
 		}).bind(this);
 
+	var tweetCallback = (function(err, data, response) {
+			if (err === null) {
+				callback(null, data);
+			} else {
+				callback(err, null);
+			}
+		}).bind(this);
 
-	this.getDelegatedAccounts(authorId, getDelegatedCB);
+	this._getTwitterClientFor(authorId, postAsId, getClientCallback);
 
 };
 

@@ -19,6 +19,9 @@ App.controller('dashboardController', ['$scope', '$sce', '$http', '$timeout', '$
 		};
 
 		$scope.selectAccount = function(user) {
+			if ($scope.selectedAccount.id.toString() === user.id.toString()) {
+				return;
+			}
 			$scope.selectedAccount = user;
 			$scope.refreshTweets();
 		};	

@@ -51,8 +51,8 @@ passport.serializeUser(function(user, done) {
 	done(null, user);
 });
 
-passport.deserializeUser(function(obj, done) {
-	done(null, obj);
+passport.deserializeUser(function(id, done) {
+	done(null, id);
 });
 
 
@@ -94,17 +94,31 @@ app.get('/api/delegated-to-accounts', function(req, res) {
 });
 
 app.get('/api/delegated-accounts', function(req, res) {
-	fatNest.getDelegatedAccounts(req.user.id.toString(), function(err, delegatedAccounts) {
+
+	var primaryAccount;
+
+	var getUserCB = function(err, user) {
+		if (err) {
+			res.json({ error: err });
+		} else {
+			primaryAccount = user;
+			fatNest.getDelegatedAccounts(req.user.id.toString(), delegatedAccountsCB);
+		}
+	};
+
+	var delegatedAccountsCB = function(err, delegatedAccounts) {
 		if (err) {
 			console.error(err);
 			return;
 		}
 
 		res.json({
-			"primary-account": req.user,
+			"primary-account": primaryAccount,
 			"delegated-accounts": delegatedAccounts
 		});
-	});
+	};
+
+	fatNest.getUser(req.user.id.toString(), req.user.id.toString(), getUserCB);
 
 });
 
@@ -153,6 +167,16 @@ app.post('/api/tweet', function(req, res) {
 	});
 });
 
+app.post('/api/detweet/:id', function(req, res) {
+	fatNest.removeTweet(req.user.id.toString(), req.body.user_id, req.params.id, function(err, result) {
+		if (err === null) {
+			res.json({ success: true });
+		} else {
+			res.json({ error: err, success: false });
+		}
+	});
+});
+
 app.all('/api/*', ensureAuthenticated);
 
 var indexHandler = function(req, res) {
@@ -162,6 +186,18 @@ var indexHandler = function(req, res) {
 			cached_data: true
 		};
 
+		var primaryAccount;
+
+		var getUserCB = function(err, user) {
+			if (err) {
+				console.error(err);
+				return;
+			} 
+			
+			primaryAccount = user;
+			fatNest.getDelegatedAccounts(req.user.id.toString(), delegatedAccountCB);
+		};
+
 		delegatedAccountCB = function(err, delegatedAccounts) {
 			if (err) {
 				console.error(err);
@@ -169,7 +205,7 @@ var indexHandler = function(req, res) {
 			}
 
 			payload['/api/delegated-accounts'] = {
-					"primary-account": req.user,
+					"primary-account": primaryAccount,
 					"delegated-accounts": delegatedAccounts
 				};
 			fatNest.getDelegatedToAccounts(req.user.id.toString(), delegatedToAccountCB);
@@ -207,7 +243,7 @@ var indexHandler = function(req, res) {
 
 		};
 
-		fatNest.getDelegatedAccounts(req.user.id.toString(), delegatedAccountCB);
+		fatNest.getUser(req.user.id.toString(), req.user.id.toString(), getUserCB);
 	} else {
 		res.render('index.html');
 	}
