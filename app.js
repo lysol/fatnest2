@@ -14,7 +14,7 @@ var fatNest = new FatNest(config);
 
 app.use(allowLocalAccess);
 app.use(express.static('public'));
-app.use(session({ secret: 'sdklfjdsklghk flkjouxn89ecgosyecogvyseo8ycgoghmeshgsgsetest87s8te8st78str78trsDTUPLU:DTY:RSYKSRY:LKJRSYSJYY' }));
+app.use(session({ secret: config.COOKIE_SECRET }));
 app.use(passport.initialize());
 app.use(passport.session({
 	cookie: {
