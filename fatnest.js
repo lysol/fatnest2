@@ -12,16 +12,24 @@ function FatNest(config) {
 	this._userCache = {};
 }
 
+/* Private Methods */
+
+/**
+ * Check if a value is numeric
+ * @param  {any}  n The value in question
+ * @return {Boolean}   
+ */
 method._isNumeric = function(n) {
 	return !isNaN(parseFloat(n)) && isFinite(n);
 };
 
-method.saveUser = function(token, tokenSecret, profile) {
-	var payload = { token: token, tokenSecret: tokenSecret, username: profile.username };
-	this._redisClient.hmset(profile.id.toString() + ':keys', payload);
-};
-
-method.getTwitterClient = function(id, cb) {
+/**
+ * Return a Twit instance for a given user ID's credentials.
+ * @param  {string}   id The Twitter ID of the user
+ * @param  {Function} cb Callback(err, client)
+ * @return {Function}      Return this instance for method chaning
+ */
+method._getTwitterClient = function(id, cb) {
 
 	var getKeysCB = (function(err, obj) {
 			if (err === null && obj) {
@@ -44,8 +52,159 @@ method.getTwitterClient = function(id, cb) {
 	} else {
 		cb(null, this._twits[id]);
 	}
+
+	return this;
 };
 
+/**
+ * Some kind of hacky thing I need to refactor that binds a userId to the scope of the tweetEmbed method...
+ * @param  {string} userId The Twitter User ID
+ * @return {Function}        A closure that runs tweetEmbed with the userId bound to the scope
+ */
+method._tweetEmbedClosure = function(userId) {
+	return (function(tweetId, cb) {
+			return this.tweetEmbed(userId, tweetId, cb);
+		}).bind(this);
+};
+
+/**
+ * Map Twitter users to IDs
+ * @param  {string}   clientId The ID of the user executing this operation
+ * @param  {array}   userIDs  An array of user IDs
+ * @param  {Function} callback callback(err, users)
+ * @return {Function}            Returns this for chaining
+ */
+method._getTwitterUsersForIDs = function(clientId, userIDs, callback) {
+	var mapper = (function(twitterId, cb) {
+			twitterId = twitterId.toString();
+
+			var closure = function(err, user) {
+				if (err) {
+					cb(err, null);
+				} else {
+					cb(null, user);
+				}
+			};
+
+			this.getUser(clientId, twitterId, closure);
+		}).bind(this);
+
+	var closureCB = (function(err, twitterUsers) {
+			if (err) {
+				callback(err,  null);
+				return;
+			}
+	
+			callback(null, twitterUsers);
+		}).bind(this);
+
+	async.map(userIDs, mapper, closureCB);
+
+	return this;
+};
+
+/**
+ * This method gets a Twitter client for a user for that has been delegated to another user,
+ * and checks to ensure that this is allowed.
+ * 				
+ * @param  {[string]}   forId    The user ID requesting the client
+ * @param  {string}   fromId   The ID of the user being requested
+ * @param  {Function} callback callback(err, client)
+ * @return {Function}            Returns this for chaining
+ */
+method._getTwitterClientFor = function(forId, fromId, callback) {
+
+	var getDelegatedCB = (function(err, users) {
+	
+			var found = false;
+	
+			for(var u in users) {
+				console.log(users[u], fromId);
+				if (fromId == users[u].id) {
+					found = true;
+					break;
+				}
+			}
+	
+			if (found) 
+				this._getTwitterClient(fromId, callback);
+			else 
+				callback("Access denied", null);
+		}).bind(this);	
+
+	this.getDelegatedAccounts(forId, getDelegatedCB);
+
+	return this;
+};
+
+
+
+/* Public Methods */
+
+/**
+ * Saves user info from sign-in into Redis so that Twitter clients can be instantiated later
+ * @param  {string} token       The token returned by the Twitter auth flow and Passport
+ * @param  {string} tokenSecret The tokenSecret returned by the Twitter auth flow and Passport
+ * @param  {Object} profile     The user object returned by Twitter/Passport
+ * @return {Function}             Return this for chaining
+ */
+method.saveUser = function(token, tokenSecret, profile) {
+	var payload = { token: token, tokenSecret: tokenSecret, username: profile.username };
+	this._redisClient.hmset(profile.id.toString() + ':keys', payload);
+
+	return this;
+};
+
+/**
+ * Get a Twitter user from Twitter using a given user's credentials
+ * @param  {string}   clientId The user ID requesting the user
+ * @param  {string}   userId   The user ID being requested
+ * @param  {Function} callback callback(err, user)
+ * @return {Function}            Return this for chaining
+ */
+method.getUser = function(clientId, userId, callback) {
+
+	var twitterClientCB = (function(err, twit) {
+			if (err) {
+				callback(err, null);
+				return;
+			}
+	
+			if (this._userCache[userId] !== undefined) {
+				callback(null, this._userCache[userId]);
+				return;
+			}
+	
+			var data = {};
+	
+			if (this._isNumeric(userId)) {
+				data.user_id = userId;
+			} else {
+				data.screen_name = userId;
+			}
+	
+			twit.get('users/show', data, showCB);
+		}).bind(this);
+
+	var showCB = (function(err, user) {
+			this._userCache[userId] = user;
+			callback(null, user);
+			return;
+		}).bind(this);
+
+	this._getTwitterClient(clientId, twitterClientCB);
+
+	return this;
+};
+
+
+/**
+ * Get the OEmbed markup for a tweet
+ * @param  {string}   userId The user ID requesting the OEmbed
+ * @param  {Object}   tweet  The previously fetched Tweet from Twitter
+ * @param  {Function} cb     callback(err, html)
+ * @return {Function}          Return this for chaining
+ */
 method.tweetEmbed = function(userId, tweet, cb) {
 
 	var newhtml;
@@ -57,7 +216,7 @@ method.tweetEmbed = function(userId, tweet, cb) {
 			}
 	
 			if (html === null) {
-				this.getTwitterClient(userId, twitterClientCB);
+				this._getTwitterClient(userId, twitterClientCB);
 			} else {
 				cb(null, html);
 			}
@@ -93,75 +252,16 @@ method.tweetEmbed = function(userId, tweet, cb) {
 
 	var tweetId = tweet.id_str;
 	this._redisClient.get('tweet_' + tweetId, tweetIDCB);
+
+	return this;
 };
 
-
-method.tweetEmbedClosure = function(userId) {
-	return (function(tweetId, cb) {
-			return this.tweetEmbed(userId, tweetId, cb);
-		}).bind(this);
-};
-
-method.getUser = function(clientId, userId, callback) {
-
-	var twitterClientCB = (function(err, twit) {
-			if (err) {
-				callback(err, null);
-				return;
-			}
-	
-			if (this._userCache[userId] !== undefined) {
-				callback(null, this._userCache[userId]);
-				return;
-			}
-	
-			var data = {};
-	
-			if (this._isNumeric(userId)) {
-				data.user_id = userId;
-			} else {
-				data.screen_name = userId;
-			}
-	
-			twit.get('users/show', data, showCB);
-		}).bind(this);
-
-	var showCB = (function(err, user) {
-			this._userCache[userId] = user;
-			callback(null, user);
-			return;
-		}).bind(this);
-
-	this.getTwitterClient(clientId, twitterClientCB);
-};
-
-method.getTwitterUsersForIDs = function(clientId, userIDs, callback) {
-	var mapper = (function(twitterId, cb) {
-			twitterId = twitterId.toString();
-
-			var closure = function(err, user) {
-				if (err) {
-					cb(err, null);
-				} else {
-					cb(null, user);
-				}
-			};
-
-			this.getUser(clientId, twitterId, closure);
-		}).bind(this);
-
-	var closureCB = (function(err, twitterUsers) {
-			if (err) {
-				callback(err,  null);
-				return;
-			}
-	
-			callback(null, twitterUsers);
-		}).bind(this);
-
-	async.map(userIDs, mapper, closureCB);
-};
-
+/**
+ * Get the list of accounts the requesting client has delegated access to
+ * @param  {string}   userId   The ID of the requesting user
+ * @param  {Function} callback callback(err, array)
+ * @return {Function}            Return this for chaining
+ */
 method.getDelegatedToAccounts = function(userId, callback) {
 
 	var delegatesCB = (function(err, twitter_ids) {
@@ -170,7 +270,7 @@ method.getDelegatedToAccounts = function(userId, callback) {
 				return;
 			}
 	
-			this.getTwitterUsersForIDs(userId, twitter_ids, usersCB);			
+			this._getTwitterUsersForIDs(userId, twitter_ids, usersCB);			
 		}).bind(this);
 
 	var usersCB = (function(err, users) {
@@ -183,8 +283,16 @@ method.getDelegatedToAccounts = function(userId, callback) {
 		}).bind(this);
 
 	this._redisClient.smembers(userId + ':delegated-to', delegatesCB);
+
+	return this;
 };
 
+/**
+ * Get the list of accounts this user has access to tweet as
+ * @param  {string}   userId   The requesting user ID
+ * @param  {Function} callback callback(err, array)
+ * @return {Function}            Return this for chaining
+ */
 method.getDelegatedAccounts = function(userId, callback) {
 
 	var tempUsers;
@@ -195,7 +303,7 @@ method.getDelegatedAccounts = function(userId, callback) {
 				return;
 			}
 	
-			this.getTwitterUsersForIDs(userId, twitter_ids, twitterUsersCB);
+			this._getTwitterUsersForIDs(userId, twitter_ids, twitterUsersCB);
 		}).bind(this);
 
 	var twitterUsersCB = (function(err, users) {
@@ -217,8 +325,17 @@ method.getDelegatedAccounts = function(userId, callback) {
 		}).bind(this);
 
 	this._redisClient.smembers(userId + ':delegated', delegatedCB);
+
+	return this;
 };
 
+/**
+ * Remove another user's ability to tweet as this user
+ * @param  {string}   userId       The user requesting the change for themselves
+ * @param  {string}   targetUserId The user that should have its access removed
+ * @param  {Function} callback     callback(err, success)
+ * @return {Function}                Return this for chaining
+ */
 method.removeDelegate = function(userId, targetUserId, callback) {
 
 	var delegatedCB = (function(err, res) {
@@ -240,8 +357,17 @@ method.removeDelegate = function(userId, targetUserId, callback) {
 		}).bind(this);
 
 	this._redisClient.srem(userId + ':delegated-to', targetUserId, delegatedCB);
+
+	return this;
 };
 
+/**
+ * Allow another user to tweet as the requesting account
+ * @param  {string}   userId     The user requesting this
+ * @param  {string}   screenName The screen name of the user that should be given access
+ * @param  {Function} callback   callback(err, user)
+ * @return {Function}              Return this for chaining
+ */
 method.createDelegate = function(userId, screenName, callback) {
 
 	var delegateUser;
@@ -273,9 +399,18 @@ method.createDelegate = function(userId, screenName, callback) {
 		}).bind(this);
 
 	this.getUser(userId, screenName, cachedUserCB);
+
+	return this;
 };
 
-// returns html
+/**
+ * Get the embed HTML for the recent tweets list
+ * @param  {string}   user_id  The user to get recent tweets for. The user must have saved credentials.
+ *                             This bypasses access restrictions, because by delegating access you are 
+ *                             allowing this user to see your tweets.
+ * @param  {Function} callback callback(err, html)
+ * @return {Function}            Return this for chaining
+ */
 method.recentTweets = function(user_id, callback) {
 
     var getClientCallback = (function(err, twit) {
@@ -287,37 +422,24 @@ method.recentTweets = function(user_id, callback) {
     	}).bind(this);
 
 	var timelineCallback = (function(err, data, response) {
-			var closure = this.tweetEmbedClosure(user_id);
+			var closure = this._tweetEmbedClosure(user_id);
 	
 			async.map(data, closure, callback);
 		}).bind(this);
 
-	this.getTwitterClient(user_id, getClientCallback);
+	this._getTwitterClient(user_id, getClientCallback);
+
+	return this;
 };
 
-method._getTwitterClientFor = function(forId, fromId, callback) {
-
-	var getDelegatedCB = (function(err, users) {
-	
-			var found = false;
-	
-			for(var u in users) {
-				console.log(users[u], fromId);
-				if (fromId == users[u].id) {
-					found = true;
-					break;
-				}
-			}
-	
-			if (found) 
-				this.getTwitterClient(fromId, callback);
-			else 
-				callback("Access denied", null);
-		}).bind(this);	
-
-	this.getDelegatedAccounts(forId, getDelegatedCB);
-};
-
+/**
+ * Remove a tweet as a user
+ * @param  {string}   authorId   The user requesting this change
+ * @param  {string}   deleteAsId The user owning the tweet that should be deleted
+ * @param  {string}   tweetId    The ID of the tweet that should be deleted
+ * @param  {Function} callback   callback(err, success)
+ * @return {Function}              Return this for chaining
+ */
 method.removeTweet = function(authorId, deleteAsId, tweetId, callback) {
 
 	var getClientCallback = (function(err, twit) {
@@ -339,8 +461,17 @@ method.removeTweet = function(authorId, deleteAsId, tweetId, callback) {
 
 	this._getTwitterClientFor(authorId, deleteAsId, getClientCallback);
 
+	return this;
 }
 
+/**
+ * Tweet as a user
+ * @param  {string}   authorId  The user requesting this change
+ * @param  {string}   postAsId  The user that the tweet will be posted as
+ * @param  {string}   tweetBody The body of the tweet
+ * @param  {Function} callback  callback(err, tweet)
+ * @return {Function}             Return this for chaining
+ */
 method.postTweet = function(authorId, postAsId, tweetBody, callback) {
 
 	var getClientCallback = (function(err, twit) {
@@ -362,7 +493,7 @@ method.postTweet = function(authorId, postAsId, tweetBody, callback) {
 
 	this._getTwitterClientFor(authorId, postAsId, getClientCallback);
 
+	return this;
 };
-
 
 module.exports = FatNest;

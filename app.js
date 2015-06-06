@@ -6,6 +6,7 @@ var bodyParser = require('body-parser');
 var passport = require('passport');
 var TwitterStrategy = require('passport-twitter').Strategy;
 var swig = require('swig');
+var async = require('async');
 
 // var RedisStore = require('connect-redis')(session);
 var FatNest = require('./fatnest');
@@ -193,7 +194,7 @@ var indexHandler = function(req, res) {
 				console.error(err);
 				return;
 			} 
-			
+
 			primaryAccount = user;
 			fatNest.getDelegatedAccounts(req.user.id.toString(), delegatedAccountCB);
 		};

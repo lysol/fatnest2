@@ -10,6 +10,7 @@
     "express": "^4.12.3",
     "express-session": "^1.11.2",
     "grunt-shell": "^1.1.2",
+    "jsdoc": "^3.3.0",
     "morgan": "^1.5.3",
     "passport": "^0.2.1",
     "passport-twitter": "^1.0.3",
