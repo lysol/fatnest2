@@ -34,7 +34,9 @@ module.exports = function(grunt) {
 		        dist : {
 		            src: ['fatnest.js', 'app.js', 'public/js/*.js'],
 		            options: {
-		                destination: 'doc'
+		                destination: 'doc',
+						configure: 'node_modules/angular-jsdoc/conf.json',
+						template: 'node_modules/angular-jsdoc/template'
 		            }
 		        }
 		    }
