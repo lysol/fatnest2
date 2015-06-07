@@ -77,17 +77,25 @@ header {
 	margin-bottom: 3ex;
 }
 
+.button-holder {
+	text-align: center;
+}
+
 button {
 	background-color: #444;
 	color: #FFF;
 	border-radius: 0;
-	font-size: 13pt;
+	font-size: 16pt;
 	border: 0;
+	display: inline-block;
+
+	width: 100%;
 
 	&:hover {
 		color: #CCC;
 		background-color: #494;
 	}
+
 }
 
 .account-list {
@@ -100,6 +108,32 @@ button {
 
 		& span {
 			.account-item;
+
+			& .x {
+				display: none;
+			}
+
+			&:hover {
+				& .x {
+					display: inline-block;
+					position: absolute;
+					top: 0;
+					right: 0;
+					background-color: #F00;
+					color: #FFF;
+					font-weight: bold;
+					border: 0;
+					border-radius: 0;
+					font-size: 14pt;
+					padding: 1ex 2ex;
+
+					&:hover {
+						background-color: #000;
+						color: #F00;
+					}
+
+				}
+			}
 		}
 
 		& a, & a:active, & a:visited, & a:hover {
@@ -108,28 +142,7 @@ button {
 			color: #000;
 		}
 
-		& span .x {
-			position: absolute;
-			top: 0;
-			right: 0;
-			background-color: #F00;
-			color: #FFF;
-			font-weight: bold;
-			border: 0;
-			border-radius: 0;
-			font-size: 14pt;
-
-			&:hover {
-				background-color: #000;
-				color: #F00;
-			}
-		}
-
-		&:nth-child(2) {
-			background-color: #DDD;
-		}
-
-		&.active {
+		&.active, &.active:nth-child(2) {
 			background-color: #F00;
 			color: #FFF;
 			font-weight: bold;
@@ -137,6 +150,10 @@ button {
 			& a {
 				color: #FFF;
 			}
+		}
+
+		&:nth-child(2) {
+			background-color: #DDD;
 		}
 	}
 }

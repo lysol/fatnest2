@@ -4,7 +4,7 @@
 	</div>
 
 	<div class="row">
-		<h3>Tweet</h3>
+		<h2>Tweet</h2>
 	</div>
 
 	<ul class="account-list delegated-from">
@@ -21,12 +21,14 @@
 			ng-model="draft" 
 			ng-change="evalTweet()"
 			></textarea>
-		<button ng-disabled="!checkTweet()" ng-click="tweet()">Tweet</button> 
-		<span id="charCount" ng-bind="charCount" ng-class="{ dangerous: charCount < 20 && charCount > 0, impossible: charCount <= 0 }"></span>
+		<div class="button-holder">
+			<button ng-disabled="!checkTweet()" ng-click="tweet()">Tweet</button> 
+			<span id="charCount" ng-bind="charCount" ng-class="{ dangerous: charCount < 20 && charCount > 0, impossible: charCount <= 0 }"></span>
+		</div>
 	</div>
 
 	<div class="row">
-		<h3>Delegate your account</h3>
+		<h2>Delegate your account</h2>
 	</div>
 
 	<ul class="account-list delegated-to">
@@ -34,7 +36,7 @@
 			<span>
 				<img ng-src="{{ account.profile_image_url }}" alt="{{ account.screen_name }}">
 				{{ account.screen_name }}
-				<button class="x" ng-click="removeDelegate(account.id)">X</button>
+				<a href="#" class="x" ng-click="removeDelegate(account.id)">X</a>
 			</span>
 		</li>
 	</ul>
@@ -42,7 +44,9 @@
 	<div class="row">
 		<form name="newDelegateForm" novalidate ng-submit="checkDelegate()">
 		<input name="newDelegate" ng-model="newDelegate" required>
-		<button>Add</button>
+		<div class="button-holder">
+			<button>Add</button>
+		</div>
 		<div ng-show="newDelegateForm.newDelegate.$touched && newDelegateForm.newDelegate.$error" ng-messages="newDelegateForm.newDelegate.$error">
 			<div ng-message="required">You must enter a Twitter username.</div>
 			<div ng-message="duplicate">You've already delegated to this account.</div>
@@ -53,7 +57,7 @@
 	
 
 	<div class="row">
-		<h3>Recent Tweets by @{{ selectedAccount.screen_name }}</h3>
+		<h2>Recent Tweets by @{{ selectedAccount.screen_name }}</h2>
 		<div id="tweet-container" ng-bind-html="tweets" ng-hide="tweetsLoading">
 			
 		</div>
