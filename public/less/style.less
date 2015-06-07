@@ -1,5 +1,17 @@
 /** constants **/
-@standard: 1ex;
+@size-unit: 1ex;
+@dangerous: #AA0000;
+@impossible: #FF0000;
+@shade1: #FFFFFF;
+@shade2: #000000;
+@h1-type: 20pt;
+@h2-type: 3.6rem;
+@button-type: 3rem;
+@button-height: 5.2rem;
+@interface-type: 2rem;
+@body-type: 14px;
+@button-color: #444;
+@unimportant: #444;
 
 /** mixins **/
 .heading {
@@ -15,7 +27,7 @@
 .account-item {
 	display: block;
 	text-decoration: none;
-	color: #000;
+	color: @shade2;
 	font-size: 13pt;
 	position: relative;
 
@@ -28,9 +40,9 @@
 /** styles **/
 
 h1 {
-	font-size: 11vw;
+	font-size: @h1-type;
 	white-space: nowrap;
-	color: #FFF;
+	color: @shade1;
 	text-align: center;
 	padding: 0;
 	margin: 0;
@@ -38,7 +50,7 @@ h1 {
 }
 
 h2 {
-	font-size: 3.6rem;
+	font-size: @h2-type;
 	.heading;
 }
 
@@ -50,7 +62,7 @@ h3, h4, h5, h6 {
 body {
   padding: 0;
   margin: 0;
-  font: 14px "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+  font: @body-type "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
 
   & .container {
   	margin: 0;
@@ -59,7 +71,7 @@ body {
   }
 
   & .row {
-	padding: @standard;
+	padding: @size-unit;
   }
 }
 
@@ -69,8 +81,8 @@ a {
 
 header {
 	z-index: -100;
-	padding: @standard;
-	background-color: #000;
+	padding: @size-unit;
+	background-color: @shade2;
 }
 
 .row {
@@ -82,10 +94,10 @@ header {
 }
 
 button {
-	background-color: #444;
-	color: #FFF;
+	background-color: @button-color;
+	color: @shade1;
 	border-radius: 0;
-	font-size: 16pt;
+	font-size: @button-type;
 	border: 0;
 	display: inline-block;
 
@@ -96,12 +108,16 @@ button {
 		background-color: #494;
 	}
 
+	& .char-count {
+		font-size: @interface-type;
+	}
+
 }
 
 .account-list {
 
 	& li {
-		padding: @standard;
+		padding: @size-unit;
 		list-style: none;
 		margin: 0;
 		background-color: #EEE;
@@ -119,17 +135,17 @@ button {
 					position: absolute;
 					top: 0;
 					right: 0;
-					background-color: #F00;
-					color: #FFF;
+					background-color: @dangerous;
+					color: @shade1;
 					font-weight: bold;
 					border: 0;
 					border-radius: 0;
-					font-size: 14pt;
+					font-size: @interface-type;
 					padding: 1ex 2ex;
 
 					&:hover {
-						background-color: #000;
-						color: #F00;
+						background-color: @shade2;
+						color: @impossible;
 					}
 
 				}
@@ -139,16 +155,16 @@ button {
 		& a, & a:active, & a:visited, & a:hover {
 			.account-item;
 			text-decoration: none;
-			color: #000;
+			color: @shade2;
 		}
 
 		&.active, &.active:nth-child(2) {
-			background-color: #F00;
-			color: #FFF;
+			background-color: @dangerous;
+			color: @shade1;
 			font-weight: bold;
 
 			& a {
-				color: #FFF;
+				color: @shade1;
 			}
 		}
 
@@ -160,31 +176,35 @@ button {
 
 .delegated-from {
 	& li:hover, & li:nth-child(2):hover {
-		background-color: #000;
+		background-color: @shade2;
 	}
 
 	& li:hover a, & li:nth-child(2):hover a, 
 	& li:hover span, & li:nth-child(2):hover span {
-		color: #FFF;
+		color: @shade1;
 	}
 
 	& li.active:hover {
-		background-color: #000;
+		background-color: @shade2;
 	}
 }
 
 input[name="newDelegate"] {
-	font-size: 14pt;
+	font-size: @interface-type;
 	padding: .6ex 0.1ex;
 	width: 72%;
 }
 
+.unimportant {
+	color: @unimportant;
+}
+
 .dangerous {
-	color: #A00;
+	color: @dangerous;
 }
 
 .impossible {
-	color: #F00;
+	color: @impossible;
 }
 
 .draftbox {
@@ -193,14 +213,15 @@ input[name="newDelegate"] {
 
 .container textarea {
 	border-radius: 0;
-	font-size: 13pt;
+	font-size: @interface-type;
 }
 
 .container button {
-	background-color: #000;
-	color: #FFF;
-	font-size: 13pt;
+	background-color: @shade2;
+	color: @shade1;
+	font-size: @button-type;
 	border-radius: 0;
+	height: @button-height;
 
 	&:hover {
 		color: #DDD;
@@ -208,7 +229,3 @@ input[name="newDelegate"] {
 	}
 }
 
-#charCount {
-	font-size: 16pt;
-	font-weight: bold;
-}

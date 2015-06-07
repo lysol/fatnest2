@@ -8,9 +8,13 @@
 	</div>
 
 	<ul class="account-list delegated-from">
-		<li ng-repeat="account in delegatedAccounts" ng-class="{active : accountIsSelected(account)}">
-			<a href="#" ng-click="selectAccount(account)">
-				<img ng-src="{{ account.profile_image_url }}" alt="{{ account.screen_name }}">
+		<li ng-repeat="account in delegatedAccounts" 
+			ng-class="{active : accountIsSelected(account)}">
+			<a href="#" 
+				ng-click="selectAccount(account)">
+				<img 
+					ng-src="{{ account.profile_image_url }}" 
+					alt="{{ account.screen_name }}">
 				{{ account.screen_name }}
 			</a>
 		</li>
@@ -22,8 +26,20 @@
 			ng-change="evalTweet()"
 			></textarea>
 		<div class="button-holder">
-			<button ng-disabled="!checkTweet()" ng-click="tweet()">Tweet</button> 
-			<span id="charCount" ng-bind="charCount" ng-class="{ dangerous: charCount < 20 && charCount > 0, impossible: charCount <= 0 }"></span>
+			<button 
+				ng-disabled="!checkTweet()" 
+				ng-click="tweet()">
+				Tweet 
+				<span 
+					id="charCount" 
+					ng-bind="'(' + charCount + ')'" 
+					ng-class="{ 
+						dangerous: charCount <= 20 && charCount > 0, 
+						impossible: charCount <= 0,
+						unimportant: charCount > 20
+					}">
+				</span>
+			</button> 
 		</div>
 	</div>
 
@@ -43,7 +59,9 @@
 
 	<div class="row">
 		<form name="newDelegateForm" novalidate ng-submit="checkDelegate()">
-		<input name="newDelegate" ng-model="newDelegate" required>
+		<input name="newDelegate" 
+			ng-model="newDelegate" 
+			required>
 		<div class="button-holder">
 			<button>Add</button>
 		</div>
