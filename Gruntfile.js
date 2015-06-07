@@ -42,6 +42,22 @@ module.exports = function(grunt) {
 	    },
 	    lesslint: {
 	    	src: ['public/less/style.less']
+	    },
+	    less: {
+	      development: {
+	        options: {
+	        },
+	        files: {
+	          "public/css/style.css": "public/less/style.less"
+	        }
+	      },
+	      production: {
+	        options: {
+	        },
+	        files: {
+	          "public/css/style.css": "public/less/style.less"
+	        }
+	      }
 	    }
 
 	});
@@ -50,6 +66,7 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-wiredep');
 	grunt.loadNpmTasks('grunt-jsdoc');
 	grunt.loadNpmTasks('grunt-lesslint');
+	grunt.loadNpmTasks('grunt-contrib-less');
 
-	grunt.registerTask('default', ['jshint', 'wiredep', 'jsdoc', 'lesslint']);
+	grunt.registerTask('default', ['jshint', 'wiredep', 'jsdoc', 'lesslint', 'less']);
 };

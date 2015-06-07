@@ -1,0 +1,205 @@
+/** constants **/
+.huge {
+  font-size: 20pt;
+}
+.large {
+  font-size: 3.5rem;
+}
+.medium {
+  font-size: 2.5rem;
+}
+.small {
+  font-size: 1rem;
+}
+/** mixins **/
+.heading {
+  text-transform: uppercase;
+  font-weight: bold;
+}
+.avatar {
+  vertical-align: middle;
+  margin-right: 3ex;
+}
+.account-item {
+  display: block;
+  text-decoration: none;
+  color: #000000;
+  position: relative;
+  font-size: 2.5rem;
+}
+.account-item img {
+  vertical-align: middle;
+  margin-right: 3ex;
+}
+/** styles **/
+h1 {
+  white-space: nowrap;
+  color: #ffffff;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+  font-size: 20pt;
+}
+h2 {
+  font-size: 3.6rem;
+  font-size: 3.5rem;
+}
+small {
+  font-size: 1rem;
+}
+body {
+  padding: 0;
+  margin: 0;
+  font-family: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+  font-size: 2.5rem;
+}
+body .container {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+body .row {
+  padding: 1ex;
+}
+a {
+  color: #0097CF;
+}
+a:hover {
+  color: #00679F;
+}
+header {
+  z-index: -100;
+  padding: 1ex;
+  background-color: #000000;
+}
+.row {
+  margin-bottom: 3ex;
+}
+.button-holder {
+  text-align: center;
+}
+button {
+  background-color: #444444;
+  color: #ffffff;
+  border-radius: 0;
+  border: 0;
+  display: inline-block;
+  width: 100%;
+  font-size: 2.5rem;
+}
+button:hover {
+  color: #CCC;
+  background-color: #494;
+}
+button .char-count {
+  font-size: 1rem;
+}
+.account-list li {
+  padding: 1ex;
+  list-style: none;
+  margin: 0;
+  background-color: #EEE;
+}
+.account-list li span {
+  display: block;
+  text-decoration: none;
+  color: #000000;
+  position: relative;
+  font-size: 2.5rem;
+}
+.account-list li span img {
+  vertical-align: middle;
+  margin-right: 3ex;
+}
+.account-list li span .x {
+  display: none;
+}
+.account-list li span:hover .x {
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #aa0000;
+  color: #ffffff;
+  font-weight: bold;
+  border: 0;
+  border-radius: 0;
+  padding: 1ex 2ex;
+}
+.account-list li span:hover .x:hover {
+  background-color: #000000;
+  color: #ff0000;
+}
+.account-list li a,
+.account-list li a:active,
+.account-list li a:visited,
+.account-list li a:hover {
+  display: block;
+  position: relative;
+  font-size: 2.5rem;
+  text-decoration: none;
+  color: #000000;
+}
+.account-list li a img,
+.account-list li a:active img,
+.account-list li a:visited img,
+.account-list li a:hover img {
+  vertical-align: middle;
+  margin-right: 3ex;
+}
+.account-list li.active,
+.account-list li.active:nth-child(2) {
+  background-color: #aa0000;
+  color: #ffffff;
+  font-weight: bold;
+}
+.account-list li.active a,
+.account-list li.active:nth-child(2) a {
+  color: #ffffff;
+}
+.account-list li:nth-child(2) {
+  background-color: #DDD;
+}
+.delegated-from li:hover,
+.delegated-from li:nth-child(2):hover {
+  background-color: #000000;
+}
+.delegated-from li:hover a,
+.delegated-from li:nth-child(2):hover a,
+.delegated-from li:hover span,
+.delegated-from li:nth-child(2):hover span {
+  color: #ffffff;
+}
+.delegated-from li.active:hover {
+  background-color: #000000;
+}
+input,
+textarea {
+  font-size: 2.5rem;
+  border-radius: 0;
+}
+input[name="newDelegate"] {
+  padding: .6ex 0.1ex;
+  width: 72%;
+}
+.unimportant {
+  color: #444444;
+}
+.dangerous {
+  color: #aa0000;
+}
+.impossible {
+  color: #ff0000;
+}
+.draftbox {
+  height: 150px;
+}
+.container button {
+  background-color: #000000;
+  color: #ffffff;
+  height: 5.2rem;
+}
+.container button:hover {
+  color: #DDD;
+  background-color: #222;
+}
