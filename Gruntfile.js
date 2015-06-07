@@ -30,7 +30,7 @@ module.exports = function(grunt) {
 				directory: "public/bower_components"
 			}
 		},
-		jsdoc : {
+		jsdoc: {
 		        dist : {
 		            src: ['fatnest.js', 'app.js', 'public/js/*.js'],
 		            options: {
@@ -39,13 +39,17 @@ module.exports = function(grunt) {
 						template: 'node_modules/angular-jsdoc/template'
 		            }
 		        }
-		    }
+	    },
+	    lesslint: {
+	    	src: ['public/less/style.less']
+	    }
 
 	});
 
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-wiredep');
 	grunt.loadNpmTasks('grunt-jsdoc');
+	grunt.loadNpmTasks('grunt-lesslint');
 
-	grunt.registerTask('default', ['jshint', 'wiredep', 'jsdoc']);
+	grunt.registerTask('default', ['jshint', 'wiredep', 'jsdoc', 'lesslint']);
 };

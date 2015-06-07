@@ -1,0 +1,197 @@
+/** constants **/
+@standard: 1ex;
+
+/** mixins **/
+.heading {
+	text-transform: uppercase; 
+	font-weight: bold;
+}
+
+.avatar {
+	vertical-align: middle;
+	margin-right: 3ex;
+}
+
+.account-item {
+	display: block;
+	text-decoration: none;
+	color: #000;
+	font-size: 13pt;
+	position: relative;
+
+	& img {
+		.avatar;
+	}
+}
+
+
+/** styles **/
+
+h1 {
+	font-size: 11vw;
+	white-space: nowrap;
+	color: #FFF;
+	text-align: center;
+	padding: 0;
+	margin: 0;
+	.heading;
+}
+
+h2 {
+	font-size: 3.6rem;
+	.heading;
+}
+
+
+h3, h4, h5, h6 {
+	.heading;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  font: 14px "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+
+  & .container {
+  	margin: 0;
+  	padding: 0;
+  	width: 100%;
+  }
+
+  & .row {
+	padding: @standard;
+  }
+}
+
+a {
+  color: #00B7FF;
+}
+
+header {
+	z-index: -100;
+	padding: @standard;
+	background-color: #000;
+}
+
+.row {
+	margin-bottom: 3ex;
+}
+
+button {
+	background-color: #444;
+	color: #FFF;
+	border-radius: 0;
+	font-size: 13pt;
+	border: 0;
+
+	&:hover {
+		color: #CCC;
+		background-color: #494;
+	}
+}
+
+.account-list {
+
+	& li {
+		padding: @standard;
+		list-style: none;
+		margin: 0;
+		background-color: #EEE;
+
+		& span {
+			.account-item;
+		}
+
+		& a, & a:active, & a:visited, & a:hover {
+			.account-item;
+			text-decoration: none;
+			color: #000;
+		}
+
+		& span .x {
+			position: absolute;
+			top: 0;
+			right: 0;
+			background-color: #F00;
+			color: #FFF;
+			font-weight: bold;
+			border: 0;
+			border-radius: 0;
+			font-size: 14pt;
+
+			&:hover {
+				background-color: #000;
+				color: #F00;
+			}
+		}
+
+		&:nth-child(2) {
+			background-color: #DDD;
+		}
+
+		&.active {
+			background-color: #F00;
+			color: #FFF;
+			font-weight: bold;
+
+			& a {
+				color: #FFF;
+			}
+		}
+	}
+}
+
+.delegated-from {
+	& li:hover, & li:nth-child(2):hover {
+		background-color: #000;
+	}
+
+	& li:hover a, & li:nth-child(2):hover a, 
+	& li:hover span, & li:nth-child(2):hover span {
+		color: #FFF;
+	}
+
+	& li.active:hover {
+		background-color: #000;
+	}
+}
+
+input[name="newDelegate"] {
+	font-size: 14pt;
+	padding: .6ex 0.1ex;
+	width: 72%;
+}
+
+.dangerous {
+	color: #A00;
+}
+
+.impossible {
+	color: #F00;
+}
+
+.draftbox {
+	height: 150px;
+}
+
+.container textarea {
+	border-radius: 0;
+	font-size: 13pt;
+}
+
+.container button {
+	background-color: #000;
+	color: #FFF;
+	font-size: 13pt;
+	border-radius: 0;
+
+	&:hover {
+		color: #DDD;
+		background-color: #222;
+	}
+}
+
+#charCount {
+	font-size: 16pt;
+	font-weight: bold;
+}

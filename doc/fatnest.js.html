@@ -215,8 +215,6 @@ FatNest.prototype.getUsers = function(clientId, userIds, callback) {
 			} else {
 				newUserIds.push(twitterId);
 			}
-
-			this.getUser(clientId, twitterId, closure);
 	}
 
 	if (newUserIds.length > 100) {
